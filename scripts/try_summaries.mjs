@@ -3,8 +3,7 @@
 // volunteers' own words: keep it out of the repo.
 //   node scripts/try_summaries.mjs <download.json> <key file> <review.html> [how many | rows:12,33,…]
 import { readFileSync, writeFileSync } from "node:fs";
-import Anthropic from "@anthropic-ai/sdk";
-import { summarize } from "../src/summarize.js";
+import { makeClient, summarize } from "../src/summarize.js";
 
 const [file, keyFile, out, limit] = process.argv.slice(2);
 const d = JSON.parse(readFileSync(file, "utf8"));
@@ -34,14 +33,14 @@ for (const s of subs) {
 const pick = limit?.startsWith("rows:") ? limit.slice(5).split(",").map(Number) : null;
 const todo = pick ? pick.map((n) => ({ ...items[n - 1], row: n })) : limit ? items.slice(0, Number(limit)) : items;
 
-const client = new Anthropic({ apiKey: readFileSync(keyFile, "utf8").trim() });
+const client = await makeClient(readFileSync(keyFile, "utf8").trim());
 const usage = {};
 const t0 = Date.now();
 const res = await summarize(client, todo, usage);
 const cost = (usage.input * 4 + usage.output * 20) / 1e6;
 const count = {};
 for (const r of res.values()) for (const k of [r.verdict, r.level]) count[k] = (count[k] ?? 0) + 1;
-console.log(`${todo.length} texts, ${res.size} answered in ${((Date.now() - t0) / 1000).toFixed(0)} s; ${JSON.stringify(count)}; ${usage.input} in / ${usage.output} out tokens ≈ $${cost.toFixed(2)}`);
+console.log(`${todo.length} texts, ${res.size} answered (${usage.failed} failed, ${usage.skipped} skipped${usage.stopped ? ", stopped" : ""}) in ${((Date.now() - t0) / 1000).toFixed(0)} s; ${JSON.stringify(count)}; ${usage.input} in / ${usage.output} out tokens ≈ $${cost.toFixed(2)}`);
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const rows = todo.map((x, i) => {
