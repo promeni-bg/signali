@@ -173,7 +173,7 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
     <section class="kpis" aria-label="Обобщение">
       <div class="kpi"><div class="v" id="kTotal">–</div><div class="l" id="kTotalL">сигнала</div></div>
       <div class="kpi"><div class="v" id="kSections">–</div><div class="l">секции със сигнали за нередности</div></div>
-      <div class="kpi"><div class="v" id="kPeople">–</div><div class="l">доброволци подали поне един сигнал</div></div>
+      <div class="kpi"><div class="v" id="kPeople">–</div><div class="l" id="kPeopleL">доброволци подали поне един сигнал</div></div>
       <div class="kpi"><div class="v" id="kLast">–</div><div class="l">последно подаден сигнал</div></div>
     </section>
   </header>
@@ -445,6 +445,7 @@ function renderAll() {
   $("kTotalL").textContent = data.total === 1 ? "сигнал" : "сигнала";
   $("kSections").textContent = nf.format(data.sections);
   $("kPeople").textContent = nf.format(data.reporters);
+  $("kPeopleL").textContent = data.reporters === 1 ? "доброволец подал поне един сигнал" : "доброволци подали поне един сигнал";
   $("kLast").textContent = data.last ? hm.format(new Date(data.last)) + " ч." : "–";
   const sel = $("fType"), cur = state.type;
   sel.innerHTML = `<option value="">Всички видове</option>` + data.options.map((o, i) => `<option value="${i}">${esc(cleanType(o))}</option>`).join("");

@@ -53,6 +53,9 @@ jobs:
         uses: actions/deploy-pages@v4
       - name: Start the next run
         if: always() && vars.LIVE == 'true' && github.event_name != 'push'
-        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+        # a run takes ~20 s: wait, so the site is rebuilt about once a minute
+        run: |
+          sleep 40
+          gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
         env:
           GH_TOKEN: ${{ github.token }}
