@@ -5,20 +5,21 @@
 // phone number or an ЕГН typed into the wrong field).
 
 // Questions are found by type, not id, so the same code reads last election's form.
-function questionIds(questions) {
+export function questionIds(questions) {
   const q = {};
   for (const x of questions) {
     if (x.type === "INPUT_NUMBER" && !q.section) q.section = x.id;
     else if (x.type === "INPUT_TIME" && !q.time) q.time = x.id;
     else if (x.type === "MULTIPLE_CHOICE" || x.type === "CHECKBOXES") q.types ??= x.id;
     else if (x.type === "INPUT_EMAIL" && !q.email) q.email = x.id;
+    else if ((x.type === "TEXTAREA" || x.type === "INPUT_TEXT") && !q.details) q.details = x.id;
   }
   return q;
 }
 
 // The form's options: their texts, and a lookup by text or by option id, since
 // Tally may answer with either. Anything else (the free-text "other") counts as "Друго".
-function formOptions(form) {
+export function formOptions(form) {
   const blocks = form.blocks.filter((b) => b.type === "MULTIPLE_CHOICE_OPTION" || b.type === "CHECKBOX");
   const options = [...new Set(blocks.map((b) => (b.payload?.text ?? "").trim()).filter(Boolean))];
   // the form's own "other" option may carry an emoji ("❓ Друго")
