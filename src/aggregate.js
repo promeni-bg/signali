@@ -50,7 +50,8 @@ function placeOf(id, sections, areas) {
   return a ? { place: a, extra: true } : null;
 }
 
-// stats (optional) receives counts for the build log only: how type answers matched.
+// stats (optional) receives counts for the build log only: how type answers matched;
+// stats.placed: the ids of the submissions that land on a section (the ones published).
 // summaries (optional): Map submission id -> { verdict, summary, level } from
 // summarize(); only a "publish" summary and its level reach the snapshot.
 export function aggregate(form, questions, submissions, sections, now = new Date(), stats = {}, summaries = new Map()) {
@@ -63,7 +64,7 @@ export function aggregate(form, questions, submissions, sections, now = new Date
   const reporters = new Set();
   const byType = new Array(options.length).fill(0);
   let total = 0, unknown = 0, last = null;
-  Object.assign(stats, { typesMatched: 0, typesOther: 0, summaries: 0 });
+  Object.assign(stats, { typesMatched: 0, typesOther: 0, summaries: 0, placed: new Set() });
 
   for (const s of submissions) {
     if (s.isCompleted === false) continue;
@@ -87,6 +88,7 @@ export function aggregate(form, questions, submissions, sections, now = new Date
     for (const t of types) byType[t]++;
 
     total++;
+    stats.placed.add(s.id);
     const at = s.submittedAt;
     if (!last || at > last) last = at;
     let e = bySid.get(sec.id);

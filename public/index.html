@@ -186,6 +186,10 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
 .totop:hover { background: var(--chip); }
 .totop svg { width: 22px; height: 22px; }
 @media (prefers-reduced-motion: reduce) { .totop { transition: none; } }
+/* summaries off: no AI card, column or sort; on but none yet: the card waits */
+.noai #tkHead, .noai th.c-sum, .noai td.c-sum { display: none; }
+#tkHead.waiting .tk-btns { visibility: hidden; }
+#tkHead.waiting .tk-go { font-size: 14px; font-weight: 400; cursor: default; }
 /* the sparkles twinkle when a new summary comes in */
 .tk-label .ai.tw svg { animation: tw .9s ease-out; }
 @keyframes tw { 0% { transform: scale(1) rotate(0); } 40% { transform: scale(1.35) rotate(20deg); } 100% { transform: scale(1) rotate(0); } }
@@ -329,6 +333,8 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
 <script>
 // evideo.bg folder of this election, e.g. "pe202604"; empty links to the home page.
 const EVIDEO_ELECTION = "";
+// true on the frozen test copy: its data is old on purpose
+const IS_TEST = false;
 const DATA_URL = "api/data.json";
 const REFRESH_MS = 60_000;
 const PAGE = 20;
@@ -657,10 +663,21 @@ function tickerInit() {
     if (!tk.paused && !tk.hover && !document.hidden && !tk.el.contains(document.activeElement) && Date.now() - tk.since >= TICK_MS - 50) tickerStep(1);
   }, 250);
 }
+// Summaries switched off (data.ai not true): the card, the column and the sort go.
+// On, but none yet: the card waits with a note.
 function tickerData() {
-  tk.pool = data.rows.filter((r) => r.reports.some((x) => x[4]));
-  tk.el.style.display = tk.pool.length ? "" : "none";
-  if (tk.pos < 0 && tk.pool.length) tickerStep(1);
+  const on = data.ai === true;
+  document.documentElement.classList.toggle("noai", !on);
+  $("sort").querySelector('[value="sev"]').hidden = !on;
+  if (!on && state.sort === "sev") { state.sort = "people"; $("sort").value = "people"; }
+  tk.pool = on ? data.rows.filter((r) => r.reports.some((x) => x[4])) : [];
+  const waiting = on && !tk.pool.length;
+  tk.el.classList.toggle("waiting", waiting);
+  if (waiting) {
+    tk.hist = []; tk.pos = -1;
+    tk.el.querySelector(".tk-go").innerHTML = `<span class="muted">Тук ще се появяват кратки обобщения на сигналите от секциите, щом пристигнат.</span>`;
+    tk.el.querySelector(".tk-meta").textContent = "";
+  } else if (tk.pos < 0 && tk.pool.length) tickerStep(1);
 }
 function tickerPick() {
   const last = tk.hist[tk.hist.length - 1]?.id;
@@ -671,7 +688,7 @@ function tickerPick() {
   return { id: r.id, place: r.place, at: x[0], lv: x[3], text: x[4] };
 }
 function tickerStep(d) {
-  if (!tk.pool.length) return;
+  if (!tk.pool.length || tk.el.classList.contains("waiting")) return;
   if (d > 0 && tk.pos === tk.hist.length - 1) { tk.hist.push(tickerPick()); if (tk.hist.length > 50) tk.hist.shift(); tk.pos = tk.hist.length - 1; }
   else tk.pos = Math.max(0, Math.min(tk.hist.length - 1, tk.pos + d));
   const it = tk.hist[tk.pos], box = tk.el.querySelector(".tk-text");
@@ -701,13 +718,15 @@ function goToSection(id) {
 }
 
 // ---------- data ----------
-let lastOk = 0, lastKey = "";
+let lastOk = 0, lastKey = "", dataAt = 0;
+const STALE_MS = 5 * 60e3;   // the live data is rebuilt about once a minute
 async function load() {
   try {
     const r = await fetch(`${DATA_URL}?v=${Math.floor(Date.now() / 60e3)}`, { cache: "no-cache" });
     if (!r.ok) throw new Error(r.status);
     const text = await r.text();
     lastOk = Date.now();
+    dataAt = Date.parse(text.match(/"updated":"([^"]*)"/)?.[1] ?? "") || dataAt;
     // unchanged data: don't re-render (it would close an open dropdown and drop focus)
     const key = text.replace(/"updated":"[^"]*",/, "");
     if (key !== lastKey) { lastKey = key; data = JSON.parse(text); renderAll(); }
@@ -716,11 +735,19 @@ async function load() {
   }
   status();
 }
+// Two separate failures: the page can't reach the data (no connection), or it can
+// but the data stopped changing (the build behind it fails, e.g. Tally is down).
 function status() {
-  const fresh = Date.now() - lastOk < 3 * REFRESH_MS;
-  $("dot").classList.toggle("stale", !fresh);
-  $("status").textContent = !lastOk ? "Няма връзка с данните" :
-    `Обновява се всяка минута · заредено в ${hm.format(new Date(lastOk))}` + (fresh ? "" : " · няма връзка");
+  const reach = Date.now() - lastOk < 3 * REFRESH_MS;
+  const age = dataAt ? Date.now() - dataAt : 0;
+  const stale = !IS_TEST && age > STALE_MS;
+  $("dot").classList.toggle("stale", IS_TEST || !reach || stale);
+  const at = dataAt ? hm.format(new Date(dataAt)) : "";
+  $("status").textContent =
+    !lastOk ? "Няма връзка с данните. Ще опитаме отново след минута." :
+    IS_TEST ? "Тестови данни от предишни избори · не се обновяват" :
+    stale ? `Данните не са обновявани от ${Math.floor(age / 60e3)} мин. (последни към ${at} ч.)` + (reach ? "" : " · няма връзка") :
+    `Данни към ${at} ч. · обновяват се всяка минута` + (reach ? "" : " · няма връзка");
 }
 setInterval(() => { if (!document.hidden) load(); else status(); }, REFRESH_MS);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastOk > REFRESH_MS) load(); });

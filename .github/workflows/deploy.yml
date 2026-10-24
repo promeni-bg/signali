@@ -6,6 +6,9 @@
 # minute; the 5-minute schedule restarts the loop if it ever breaks. Setting LIVE
 # to "false" is the only way to stop it: a run that fails or is cancelled still
 # starts the next one. A push to main always deploys once.
+#
+# AI summaries of the reports' details run when the secret ANTHROPIC_API_KEY is
+# set; the variable SUMMARIES=false switches them off (docs/TECHNICAL.md).
 name: Deploy
 
 on:
@@ -40,12 +43,32 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+      # the exact versions in package-lock.json; no install scripts run
+      - run: npm ci --ignore-scripts
+      # the AI summaries made by earlier runs (verdicts and published summaries only)
+      - name: Restore the summaries
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache/summaries.json
+          key: summaries-${{ github.run_id }}
+          restore-keys: summaries-
       - name: Build
+        id: build
         run: node scripts/build_site.mjs _site
         env:
           TALLY_API_KEY: ${{ secrets.TALLY_API_KEY }}
           TALLY_FORM_ID: ${{ secrets.TALLY_FORM_ID }}  # a secret, so logs mask it
           EVIDEO_ELECTION: ${{ vars.EVIDEO_ELECTION }}
+          # summaries need the key; SUMMARIES=false turns them off and hides them
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUMMARIES: ${{ vars.SUMMARIES }}
+      - name: Save the summaries
+        if: always() && steps.build.outputs.summaries_changed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .cache/summaries.json
+          key: summaries-${{ github.run_id }}-${{ github.run_attempt }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
