@@ -3,8 +3,9 @@
 # On election night, set the repository variable LIVE to "true" and run this
 # workflow once by hand (Actions > Deploy > Run workflow). Each run then starts
 # the next one when it finishes, so the live dashboard refreshes about once a
-# minute; the 5-minute schedule restarts the loop if it ever breaks. Set LIVE to
-# "false" to stop it. A push to main always deploys once.
+# minute; the 5-minute schedule restarts the loop if it ever breaks. Setting LIVE
+# to "false" is the only way to stop it: a run that fails or is cancelled still
+# starts the next one. A push to main always deploys once.
 name: Deploy
 
 on:

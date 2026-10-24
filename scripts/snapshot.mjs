@@ -9,4 +9,4 @@ const sections = JSON.parse(readFileSync(new URL("../src/sections.json", import.
 const { form, questions, submissions } = await fetchTally(formId, key);
 const snap = aggregate(form, questions, submissions, sections);
 writeFileSync(out, JSON.stringify(snap));
-console.log(`${snap.total} сигнала, ${snap.sections} секции, ${snap.reporters} сигнализиращи, ${snap.unknown.length} непознати номера -> ${out}`);
+console.log(`${snap.total} сигнала за ${snap.sections} секции, ${snap.unknown} с непознат номер, ${snap.reporters} доброволци -> ${out}`);

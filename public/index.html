@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Сигнали от видеонаблюдение · Избори 25 октомври 2026</title>
+<title>Сигнали от видеонаблюдение · %%ELECTION%%</title>
 <meta name="description" content="Доброволци гледат видеоизлъчването на преброяването от секциите на evideo.bg и подават сигнали за нередности. Вижте на живо в кои секции има най-много сигнали, какви и кога.">
 <link rel="canonical" href="https://signali.promeni.bg/">
 <meta name="theme-color" content="#ffffff">
@@ -13,7 +13,7 @@
 <meta property="og:locale" content="bg_BG">
 <meta property="og:site_name" content="Сигнали от видеонаблюдение">
 <meta property="og:url" content="https://signali.promeni.bg/">
-<meta property="og:title" content="Сигнали от видеонаблюдение · Избори 25 октомври 2026">
+<meta property="og:title" content="Сигнали от видеонаблюдение · %%ELECTION%%">
 <meta property="og:description" content="Доброволци гледат преброяването на evideo.bg и сигнализират за нередности. Вижте на живо в кои секции има най-много сигнали.">
 <meta property="og:image" content="https://signali.promeni.bg/og.png">
 <meta property="og:image:type" content="image/png">
@@ -21,7 +21,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Сигнали от видеонаблюдение: секциите, за които доброволци подават сигнали за нередности при преброяването">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Сигнали от видеонаблюдение · Избори 25 октомври 2026">
+<meta name="twitter:title" content="Сигнали от видеонаблюдение · %%ELECTION%%">
 <meta name="twitter:description" content="Доброволци гледат преброяването на evideo.bg и сигнализират за нередности. Вижте на живо в кои секции има най-много сигнали.">
 <meta name="twitter:image" content="https://signali.promeni.bg/og.png">
 <meta name="twitter:image:alt" content="Сигнали от видеонаблюдение: секциите, за които доброволци подават сигнали за нередности при преброяването">
@@ -171,7 +171,7 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
       <div class="live"><span class="dot" id="dot"></span><span id="status">Зареждане…</span></div>
     </div>
     <section class="kpis" aria-label="Обобщение">
-      <div class="kpi"><div class="v" id="kTotal">–</div><div class="l">сигнала</div></div>
+      <div class="kpi"><div class="v" id="kTotal">–</div><div class="l" id="kTotalL">сигнала</div></div>
       <div class="kpi"><div class="v" id="kSections">–</div><div class="l">секции със сигнали за нередности</div></div>
       <div class="kpi"><div class="v" id="kPeople">–</div><div class="l">доброволци подали поне един сигнал</div></div>
       <div class="kpi"><div class="v" id="kLast">–</div><div class="l">последно подаден сигнал</div></div>
@@ -223,14 +223,7 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
       <tbody id="rows"></tbody>
     </table>
     <div class="more"><button class="btn" id="moreBtn" hidden>Покажи още</button></div>
-  </section>
-
-  <section class="panel" id="unknownBox" hidden>
-    <details>
-      <summary><span id="unknownTitle"></span></summary>
-      <p class="hint" style="margin-top:8px">Номера, които не съвпадат с нито една секция в списъка на ЦИК, най-често грешно въведени.</p>
-      <div class="chips" id="unknown"></div>
-    </details>
+    <p class="hint" id="unknownNote" style="margin:12px 0 0" hidden></p>
   </section>
 
   <footer>
@@ -250,6 +243,7 @@ const PAGE = 20;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const nf = new Intl.NumberFormat("bg-BG");
+const signals = (n) => `${nf.format(n)} ${n === 1 ? "сигнал" : "сигнала"}`;
 const hm = new Intl.DateTimeFormat("bg-BG", { timeZone: "Europe/Sofia", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 const dayHm = new Intl.DateTimeFormat("bg-BG", { timeZone: "Europe/Sofia", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 const cleanType = (t) => t.replace(/^[^\p{L}\p{N}]+/u, "").trim();   // the form's option emojis
@@ -344,10 +338,9 @@ function renderTimeline() {
   const el = $("timeline");
   const ts = data.rows.flatMap((r) => r.reports.map((x) => Date.parse(x[0])));
   const step = 15 * 60e3;
-  // Election night: 19:00 on election day to 08:00 the next morning, Bulgarian time.
   // From 19:00 on election day to 30 minutes after the latest report (at least two hours).
   const [dd, mm, yy] = (data.form.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/) ?? []).slice(1).map(Number);
-  const day = dd ? Date.UTC(yy, mm - 1, dd) : Date.parse(data.updated);
+  const day = dd ? Date.UTC(yy, mm - 1, dd) : Math.floor(Date.parse(data.updated) / 86400e3) * 86400e3;
   const start = sofiaTime(day, 19);
   const latest = ts.length ? Math.max(...ts) : 0;
   const end = Math.max(start + 2 * 3600e3, Math.ceil((latest + 30 * 60e3) / step) * step);
@@ -355,7 +348,7 @@ function renderTimeline() {
   const counts = new Array(n).fill(0);
   let outside = 0;
   for (const t of ts) (t >= start && t < end) ? counts[Math.floor((t - start) / step)]++ : outside++;
-  $("timelineNote").textContent = outside ? ` ${nf.format(outside)} сигнала преди 19:00 не са показани.` : "";
+  $("timelineNote").textContent = outside ? ` ${signals(outside)} преди 19:00 не ${outside === 1 ? "е показан" : "са показани"}.` : "";
   const W = Math.max(240, el.clientWidth || 600), H = Math.max(140, el.clientHeight || 170), L = 30, B = 22, T = 6;
   const max = Math.max(...counts);
   const unit = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find((u) => u * 4 >= max) ?? 2000;
@@ -376,7 +369,7 @@ function renderTimeline() {
   el.innerHTML = s + `</svg>`;
   el.querySelectorAll("g[data-i]").forEach((g) => {
     const i = +g.dataset.i, t0 = start + i * step;
-    g.addEventListener("mousemove", (e) => showTip(e, `${hm.format(t0)}–${hm.format(t0 + step)}<br><b>${counts[i]}</b> сигнала`));
+    g.addEventListener("mousemove", (e) => showTip(e, `${hm.format(t0)}–${hm.format(t0 + step)}<br>${signals(counts[i])}`));
     g.addEventListener("mouseleave", hideTip);
   });
 }
@@ -402,6 +395,7 @@ function filtered() {
 function placeHtml(p) {
   const [, , obl, obsh, ray, st, addr] = p;
   if (!obsh) return `<div class="place">Чужбина</div>`;
+  if (!st) return `<div class="place">${esc([ray ? `р-н ${title(ray)}` : "", `общ. ${title(obsh)}`].filter(Boolean).join(", "))}</div><div class="addr">Секцията не е в списъка на ЦИК (вероятно създадена по-късно)</div>`;
   const where = [settlement(st), ray ? `р-н ${title(ray)}` : "", obsh && settlement(st).toUpperCase().indexOf(obsh) < 0 ? `общ. ${title(obsh)}` : ""].filter(Boolean).join(", ");
   return `<div class="place">${esc(where)}</div><div class="addr">${esc(addr)}</div>`;
 }
@@ -448,6 +442,7 @@ function renderRows() {
 function renderAll() {
   $("formName").textContent = "Избори " + ((data.form || "").match(/\d{1,2}\.\d{1,2}\.\d{4}/)?.[0] ?? "");
   $("kTotal").textContent = nf.format(data.total);
+  $("kTotalL").textContent = data.total === 1 ? "сигнал" : "сигнала";
   $("kSections").textContent = nf.format(data.sections);
   $("kPeople").textContent = nf.format(data.reporters);
   $("kLast").textContent = data.last ? hm.format(new Date(data.last)) + " ч." : "–";
@@ -455,22 +450,21 @@ function renderAll() {
   sel.innerHTML = `<option value="">Всички видове</option>` + data.options.map((o, i) => `<option value="${i}">${esc(cleanType(o))}</option>`).join("");
   sel.value = cur;
   renderTypes(); renderMirs(); renderTimeline(); renderRows();
-  const u = data.unknown.reduce((s, x) => s + x.n, 0);
-  $("unknownBox").hidden = !u;
-  $("unknownTitle").textContent = `${nf.format(u)} сигнала с непознат номер на секция`;
-  $("unknown").innerHTML = data.unknown.map((x) => `<span class="chip"><span class="sid">${esc(x.raw)}</span> <b>${x.n}</b></span>`).join("");
+  $("unknownNote").hidden = !data.unknown;
+  $("unknownNote").textContent = `${signals(data.unknown)} ${data.unknown === 1 ? "е" : "са"} с номер, който не е на секция (най-често грешно въведен), и не ${data.unknown === 1 ? "е включен" : "са включени"} в таблото.`;
 }
 
 // ---------- data ----------
-let lastOk = 0;
+let lastOk = 0, lastKey = "";
 async function load() {
   try {
     const r = await fetch(`${DATA_URL}?v=${Math.floor(Date.now() / 60e3)}`, { cache: "no-cache" });
     if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    if (d.error) throw new Error(d.error);
-    data = d; lastOk = Date.now();
-    renderAll();
+    const text = await r.text();
+    lastOk = Date.now();
+    // unchanged data: don't re-render (it would close an open dropdown and drop focus)
+    const key = text.replace(/"updated":"[^"]*",/, "");
+    if (key !== lastKey) { lastKey = key; data = JSON.parse(text); renderAll(); }
   } catch (e) {
     if (!data) $("rows").innerHTML = `<tr><td colspan="7" class="empty">Данните не можаха да се заредят. Ще опитаме отново след минута.</td></tr>`;
   }

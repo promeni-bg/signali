@@ -35,8 +35,14 @@ only to count distinct volunteers, and never leave the build.
 район, settlement, address and number of voters. It comes from ЦИК's 2026
 section lists, the addresses and the voter counts, and is built by
 `scripts/build_sections.py`. The form's section field is a number, so a leading
-zero is lost: IDs are padded back to 9 digits. A number that matches no
-section is listed as "непознат номер".
+zero is lost: IDs are padded back to 9 digits.
+
+A number that is on ЦИК's list, or abroad (МИР 32), is a section. So is one
+whose МИР, община and район exist but whose section is not on the list (one
+formed late, such as a mobile or hospital section); it is shown without an
+address. Any other number is only counted, never published: it may be a phone
+number or an ЕГН typed into the wrong field. Totals and type counts cover the
+reports on a section; the rest are reported as one count.
 
 ## Election night
 
@@ -63,7 +69,8 @@ A push to `main` always deploys once.
   are public.
 - **Variables:** `LIVE`, and `EVIDEO_ELECTION` (optional).
 - **Pages:** Settings → Pages → Source: GitHub Actions; custom domain
-  `signali.promeni.bg` (also in `CNAME`); Enforce HTTPS.
+  `signali.promeni.bg`; Enforce HTTPS. (A workflow-published site takes its
+  domain from these settings, not from a `CNAME` file.)
   - On the free plan, Pages works only once the repository is public.
 - **DNS (Cloudflare):** `signali` CNAME `promeni-bg.github.io`, DNS only (grey
   cloud), so that GitHub can issue the HTTPS certificate.

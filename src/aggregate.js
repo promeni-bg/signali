@@ -1,8 +1,8 @@
 // Tally submissions -> the public snapshot. Everything personal stops here: the
 // reporter's email is used only to count distinct reporters and never leaves this
-// function; free-text details and screenshots are not read at all.
-
-const TZ = "Europe/Sofia";
+// function; free-text details and screenshots are not read at all, and a section
+// number that matches no section is only counted, never published (it may be a
+// phone number or an ЕГН typed into the wrong field).
 
 // Questions are found by type, not id, so the same code reads last election's form.
 function questionIds(questions) {
@@ -16,38 +16,51 @@ function questionIds(questions) {
   return q;
 }
 
-// The form's own option texts; anything else a volunteer typed under "Друго" counts as "Друго".
+// The form's options: their texts, and a lookup by text or by option id, since
+// Tally may answer with either. Anything else (the free-text "other") counts as "Друго".
 function formOptions(form) {
-  const opts = form.blocks
-    .filter((b) => b.type === "MULTIPLE_CHOICE_OPTION" || b.type === "CHECKBOX")
-    .map((b) => (b.payload?.text ?? "").trim())
-    .filter(Boolean);
-  if (!opts.includes("Друго")) opts.push("Друго");
-  return [...new Set(opts)];
+  const blocks = form.blocks.filter((b) => b.type === "MULTIPLE_CHOICE_OPTION" || b.type === "CHECKBOX");
+  const options = [...new Set(blocks.map((b) => (b.payload?.text ?? "").trim()).filter(Boolean))];
+  // the form's own "other" option may carry an emoji ("❓ Друго")
+  let other = options.findIndex((o) => o.replace(/^[^\p{L}\p{N}]+/u, "") === "Друго");
+  if (other < 0) other = options.push("Друго") - 1;
+  const index = new Map(options.map((o, i) => [o.normalize("NFC"), i]));
+  for (const b of blocks) {
+    const i = index.get((b.payload?.text ?? "").trim().normalize("NFC"));
+    if (i !== undefined && b.uuid) index.set(b.uuid, i);
+  }
+  return { options, index, other };
 }
 
 // The section field is a number, so a leading zero (МИР 01-09) is lost: pad back to 9 digits.
 export function sectionId(answer) {
   if (answer === null || answer === undefined || answer === "") return null;
   const digits = String(answer).replace(/\D/g, "");
-  if (!digits || digits.length > 9) return { bad: String(answer).slice(0, 20) };
+  if (!digits || digits.length > 9) return { bad: true };
   return { id: digits.padStart(9, "0") };
 }
 
-const hm = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+// A number's place: a section on ЦИК's list; one abroad (МИР 32); or one ЦИК's list
+// doesn't have yet (formed late: mobile, hospital) in a known МИР, община and район.
+function placeOf(id, sections, areas) {
+  if (sections[id]) return { place: sections[id] };
+  if (id.startsWith("32")) return { place: ["32", "ЧУЖБИНА", "", "", "", "", "", null] };
+  const a = areas.get(id.slice(0, 6));
+  return a ? { place: a, extra: true } : null;
+}
 
-export function aggregate(form, questions, submissions, sections, now = new Date()) {
+// stats (optional) receives counts for the build log only: how type answers matched.
+export function aggregate(form, questions, submissions, sections, now = new Date(), stats = {}) {
   const q = questionIds(questions);
-  const options = formOptions(form);
-  const optIndex = new Map(options.map((o, i) => [o, i]));
-  const other = optIndex.get("Друго");
+  const { options, index, other } = formOptions(form);
+  const areas = new Map();
+  for (const [id, p] of Object.entries(sections)) if (!areas.has(id.slice(0, 6))) areas.set(id.slice(0, 6), [p[0], p[1], p[2], p[3], p[4], "", "", null]);
 
   const bySid = new Map();
-  const unknown = new Map();
   const reporters = new Set();
   const byType = new Array(options.length).fill(0);
-  const times = [];
-  let total = 0;
+  let total = 0, unknown = 0, last = null;
+  Object.assign(stats, { typesMatched: 0, typesOther: 0 });
 
   for (const s of submissions) {
     if (s.isCompleted === false) continue;
@@ -55,62 +68,60 @@ export function aggregate(form, questions, submissions, sections, now = new Date
     for (const r of s.responses) ans[r.questionId] = r.answer;
     const sec = sectionId(ans[q.section]);
     if (!sec) continue;
-    total++;
-    const at = s.submittedAt;
-    times.push(at);
     const email = typeof ans[q.email] === "string" ? ans[q.email].trim().toLowerCase() : "";
     if (email) reporters.add(email);
 
     let raw = ans[q.types];
     raw = Array.isArray(raw) ? raw : raw ? [raw] : [];
-    const types = [...new Set(raw.map((t) => optIndex.get(String(t).trim()) ?? other))].sort((a, b) => a - b);
+    const types = [...new Set(raw.map((t) => {
+      const i = index.get(String(t).trim().normalize("NFC"));
+      stats[i === undefined ? "typesOther" : "typesMatched"]++;
+      return i ?? other;
+    }))].sort((a, b) => a - b);
+
+    const where = sec.bad ? null : placeOf(sec.id, sections, areas);
+    if (!where) { unknown++; continue; }
     for (const t of types) byType[t]++;
 
-    if (sec.bad || !(sec.id in sections || sec.id.startsWith("32"))) {
-      const key = sec.bad ?? sec.id;
-      unknown.set(key, (unknown.get(key) ?? 0) + 1);
-      continue;
-    }
+    total++;
+    const at = s.submittedAt;
+    if (!last || at > last) last = at;
     let e = bySid.get(sec.id);
-    if (!e) bySid.set(sec.id, (e = { id: sec.id, reports: [], people: new Set() }));
+    if (!e) bySid.set(sec.id, (e = { id: sec.id, ...where, reports: [], people: new Set() }));
     if (email) e.people.add(email);
     // [submitted at (ISO), the time the volunteer gave ("HH:MM"), type indexes]
     const told = typeof ans[q.time] === "string" ? ans[q.time].slice(0, 5) : "";
     e.reports.push([at, told, types]);
   }
 
-  const out = [];
+  const rows = [];
   for (const e of bySid.values()) {
     e.reports.sort((a, b) => (a[0] < b[0] ? -1 : 1));
     const types = new Array(options.length).fill(0);
     for (const r of e.reports) for (const t of r[2]) types[t]++;
-    const p = sections[e.id] ?? [e.id.slice(0, 2), "ЧУЖБИНА", "", "", "", "", "", null];
-    out.push({
+    rows.push({
       id: e.id,
       n: e.reports.length,
       people: e.people.size,
       types,
       last: e.reports[e.reports.length - 1][0],
-      place: p, // [МИР код, МИР, област, община, район, населено място, адрес, избиратели]
+      place: e.place, // [МИР код, МИР, област, община, район, населено място, адрес, избиратели]
+      ...(e.extra ? { extra: true } : {}), // not on ЦИК's list: no settlement or address
       reports: e.reports,
     });
   }
-  out.sort((a, b) => b.n - a.n || b.people - a.people || (a.last < b.last ? 1 : -1));
 
-  times.sort();
   return {
     updated: now.toISOString(),
     form: form.name,
-    total,
-    sections: out.length,
+    total,         // reports on a section; `unknown` counts those whose number is no section
+    sections: rows.length,
     reporters: reporters.size,
-    first: times[0] ?? null,
-    last: times[times.length - 1] ?? null,
-    lastLocal: times.length ? hm.format(new Date(times[times.length - 1])) : null,
+    last,
     options,
     byType,
-    unknown: [...unknown].map(([raw, n]) => ({ raw, n })).sort((a, b) => b.n - a.n),
-    rows: out,
+    unknown,
+    rows,
   };
 }
 
