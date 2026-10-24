@@ -51,7 +51,9 @@ function placeOf(id, sections, areas) {
 }
 
 // stats (optional) receives counts for the build log only: how type answers matched.
-export function aggregate(form, questions, submissions, sections, now = new Date(), stats = {}) {
+// summaries (optional): Map submission id -> { verdict, summary, level } from
+// summarize(); only a "publish" summary and its level reach the snapshot.
+export function aggregate(form, questions, submissions, sections, now = new Date(), stats = {}, summaries = new Map()) {
   const q = questionIds(questions);
   const { options, index, other } = formOptions(form);
   const areas = new Map();
@@ -61,7 +63,7 @@ export function aggregate(form, questions, submissions, sections, now = new Date
   const reporters = new Set();
   const byType = new Array(options.length).fill(0);
   let total = 0, unknown = 0, last = null;
-  Object.assign(stats, { typesMatched: 0, typesOther: 0 });
+  Object.assign(stats, { typesMatched: 0, typesOther: 0, summaries: 0 });
 
   for (const s of submissions) {
     if (s.isCompleted === false) continue;
@@ -90,9 +92,12 @@ export function aggregate(form, questions, submissions, sections, now = new Date
     let e = bySid.get(sec.id);
     if (!e) bySid.set(sec.id, (e = { id: sec.id, ...where, reports: [], people: new Set() }));
     if (email) e.people.add(email);
-    // [submitted at (ISO), the time the volunteer gave ("HH:MM"), type indexes]
+    // [submitted at (ISO), the time the volunteer gave ("HH:MM"), type indexes,
+    //  and when there is a published summary: its level ("red"…"gray" or ""), the summary]
     const told = typeof ans[q.time] === "string" ? ans[q.time].slice(0, 5) : "";
-    e.reports.push([at, told, types]);
+    const sm = summaries.get(s.id);
+    if (sm?.verdict === "publish" && sm.summary) { e.reports.push([at, told, types, sm.level ?? "", sm.summary]); stats.summaries++; }
+    else e.reports.push([at, told, types]);
   }
 
   const rows = [];

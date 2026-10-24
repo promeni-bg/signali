@@ -40,6 +40,9 @@
   --accent: #d92d20;
   --chip: #f2f4f7;
   --focus: #1d6fd8;
+  --sev-red: #d92d20; --sev-amber: #f79009; --sev-green: #12b76a; --sev-gray: #98a2b3;
+  --ai: #7a5af8; --quote: #f8f9fb;
+  --ai-soft: #f4f1ff; --bar-tint: #f3f8ff;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -47,6 +50,7 @@
     --bg: #0d1117; --surface: #131a23; --line: #263040; --grid: #1c2430;
     --text: #f2f4f7; --text-2: #c0c7d2; --text-3: #8d97a5;
     --bar: #4c8ff0; --bar-soft: #18304f; --chip: #1c2430; --focus: #7fb0f5;
+    --sev-red: #f97066; --sev-amber: #fdb022; --sev-green: #32d583; --sev-gray: #667085; --ai: #a48afb; --quote: #18202b; --ai-soft: #1d1836; --bar-tint: #111c2b;
   }
 }
 :root[data-theme="dark"] {
@@ -54,12 +58,13 @@
   --bg: #0d1117; --surface: #131a23; --line: #263040; --grid: #1c2430;
   --text: #f2f4f7; --text-2: #c0c7d2; --text-3: #8d97a5;
   --bar: #4c8ff0; --bar-soft: #18304f; --chip: #1c2430; --focus: #7fb0f5;
+  --sev-red: #f97066; --sev-amber: #fdb022; --sev-green: #32d583; --sev-gray: #667085; --ai: #a48afb; --quote: #18202b; --ai-soft: #1d1836; --bar-tint: #111c2b;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 .wrap { max-width: 1440px; margin: 0 auto; padding: 18px 16px 48px; }
-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; margin-bottom: 16px; }
 header h1 { font-size: clamp(22px, 2.6vw, 28px); line-height: 1.15; margin: 0 0 6px; letter-spacing: -0.01em; }
 header .sub { color: var(--text-2); margin: 0; }
 .live { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; margin-top: 6px; }
@@ -67,7 +72,7 @@ header .sub { color: var(--text-2); margin: 0; }
 .dot.stale { background: var(--text-3); animation: none; }
 @keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(208,59,59,0); } 100% { box-shadow: 0 0 0 0 rgba(208,59,59,0); } }
 @media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
-.note { background: var(--chip); border: 1px solid var(--line); border-left: 3px solid var(--bar); border-radius: 8px; padding: 8px 14px; margin: 14px 0; color: var(--text-2); font-size: 13.5px; }
+.note { color: var(--text-2); font-size: 13.5px; line-height: 1.45; max-width: 34em; margin: 10px 0 0; }
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 11em)); gap: 10px; }
 .kpi { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(16,24,40,.05); border-radius: 10px; padding: 10px 14px; }
 .kpi .v { font-size: clamp(22px, 2.4vw, 28px); font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.1; }
@@ -113,10 +118,6 @@ tr.row { cursor: pointer; }
 tr.row:hover td { background: var(--chip); }
 .sid { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13.5px; white-space: nowrap; }
 .place { font-weight: 550; }
-.addr { color: var(--text-2); font-size: 13px; }
-.mini { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-.mini .track { width: 70px; height: 8px; }
-.mini .fill { height: 100%; background: var(--bar); border-radius: 0 3px 3px 0; min-width: 2px; }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .chip { background: var(--chip); border-radius: 999px; padding: 1px 8px; font-size: 12px; color: var(--text-2); white-space: nowrap; }
 .chip b { color: var(--text); font-weight: 600; }
@@ -133,19 +134,104 @@ a { color: var(--bar); }
 details summary { cursor: pointer; color: var(--text-2); }
 footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
 .empty { padding: 28px; text-align: center; color: var(--text-2); }
+/* AI summaries: severity dot, quote, sparkles */
+.sum { display: inline; }
+.sev { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; vertical-align: 0; flex: none; cursor: help; }
+.sev.red { background: var(--sev-red); } .sev.amber { background: var(--sev-amber); }
+.sev.green { background: var(--sev-green); } .sev.gray { background: var(--sev-gray); }
+.sum q { quotes: "„" "“"; color: var(--text); }
+.ai { display: inline-flex; vertical-align: -2px; margin-left: 5px; color: var(--ai); cursor: help; border-radius: 4px; }
+.ai svg { width: 14px; height: 14px; }
+.sev:focus-visible, .ai:focus-visible { outline-offset: 1px; }
+/* a bigger invisible target than the mark itself, for a finger */
+.sev, .ai { position: relative; }
+.sev::after, .ai::after { content: ""; position: absolute; inset: -8px -6px; }
+.tip { pointer-events: none; }
+.tip.wide { max-width: 300px; }
+/* Секции: the latest summary in its own column */
+td.c-sum { font-size: 13px; line-height: 1.4; color: var(--text-2); width: 34%; min-width: 16em; }
+th.c-sum { white-space: nowrap; }
+.detail li .s { display: block; margin: 2px 0 6px; color: var(--text-2); }
+/* ticker: in the header, under the numbers */
+header .hside { display: flex; flex-direction: column; gap: 10px; }
+#tkHead { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 10px 14px; width: calc(4 * 11em + 30px); max-width: 100%; }
+.tk-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+.tk-text { transition: opacity .35s; }
+.tk-text.fade { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .tk-text { transition: none; } }
+.tk-go { cursor: pointer; font-size: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.8em; }
+.tk-go:hover q { text-decoration: underline; text-decoration-color: var(--line); }
+.tk-meta { color: var(--text-3); font-size: 12.5px; margin-top: 2px; }
+.tk-meta a { color: inherit; }
+.tk-label { font-size: 12px; font-weight: 650; color: var(--text-2); letter-spacing: .03em; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; }
+.tk-btns { display: flex; gap: 4px; flex: none; }
+.tk-btns button { position: relative; font: inherit; font-size: 13px; line-height: 1; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; padding: 0; }
+.tk-btns button:hover { background: var(--chip); color: var(--text); }
+.tk-btns .ico { width: 18px; height: 18px; display: block; margin: auto; }
+/* the next button's border fills up until the next summary */
+.tk-btns .ring { position: absolute; inset: -1px; width: calc(100% + 2px); height: calc(100% + 2px); transform: rotate(-90deg); pointer-events: none; }
+.tk-btns .ring circle { fill: none; stroke: var(--bar); stroke-width: 2; stroke-dasharray: 100; stroke-dashoffset: 100; }
+h2 .ai, .tk-label .ai, th .ai { margin-left: 6px; vertical-align: -2px; }
+.ai-end { display: inline-flex; vertical-align: -2px; margin-left: 5px; color: var(--ai); visibility: hidden; }
+.ai-end svg { width: 14px; height: 14px; }
+.sum:hover .ai-end, tr.row:hover .c-sum .ai-end, tr.row:focus-visible .c-sum .ai-end { visibility: visible; }
+/* the Секции title and filters stay on screen while its list scrolls */
+#secHead { position: sticky; top: 0; z-index: 5; background: var(--surface); margin: -16px -16px 0; padding: 16px 16px 4px; border-radius: 10px 10px 0 0; }
+#secHead.stuck { border-radius: 0; box-shadow: 0 6px 12px -8px rgba(16,24,40,.25); }
+#secHead .controls { margin-bottom: 8px; }
+thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: var(--surface); }
+/* back to the top */
+.totop { position: fixed; right: 16px; bottom: 16px; z-index: 20; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--text); box-shadow: 0 4px 14px rgba(16,24,40,.18); cursor: pointer; display: grid; place-items: center; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+.totop.show { opacity: 1; pointer-events: auto; transform: none; }
+.totop:hover { background: var(--chip); }
+.totop svg { width: 22px; height: 22px; }
+@media (prefers-reduced-motion: reduce) { .totop { transition: none; } }
+/* the sparkles twinkle when a new summary comes in */
+.tk-label .ai.tw svg { animation: tw .9s ease-out; }
+@keyframes tw { 0% { transform: scale(1) rotate(0); } 40% { transform: scale(1.35) rotate(20deg); } 100% { transform: scale(1) rotate(0); } }
+@media (prefers-reduced-motion: reduce) { .tk-label .ai.tw svg { animation: none; } }
+
+/* what the eye goes to first: the AI card, then the numbers, then the types panel */
+#tkHead { background: var(--ai-soft); border: 1px solid transparent; border-left: 4px solid var(--ai); }
+.tk-go { font-size: 16px; font-weight: 500; }
+.tk-label { color: var(--ai); }
+.kpi { box-shadow: 0 1px 3px rgba(16,24,40,.08); border-color: transparent; }
+.kpi .v { font-size: clamp(26px, 2.8vw, 34px); font-weight: 700; }
+.top .panel:first-child { background: var(--bar-tint); border-color: transparent; }
+.top .panel:first-child .hbar .track { height: 14px; }
+.panel { box-shadow: none; }
+
+/* the numbers and the AI card no longer fit beside the title: the title and the note
+   share the first row, the numbers and the card take the full width under them */
+@media (max-width: 1240px) {
+  header { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .titles { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 28px; align-items: start; }
+  .titles .note { grid-column: 2; grid-row: 1 / span 3; margin: 4px 0 0; justify-self: end; }
+  .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  #tkHead { width: auto; }
+}
 @media (max-width: 1100px) {
   .top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .top .panel:last-child { grid-column: 1 / -1; }
 }
 @media (max-width: 760px) {
   header { display: block; }
+  /* a phone: the frozen header keeps only the filters, two to a row */
+  #secHead .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #secHead .controls input, #secHead .controls .chipx { grid-column: 1 / -1; }
+  #secHead .controls select { width: auto; }
+  #secHead.stuck h2, #secHead.stuck .hint { display: none; }
+  #secHead.stuck { padding-top: 10px; }
+  .titles { display: block; }
+  .titles .note { margin: 10px 0 0; }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 14px; }
   .top { grid-template-columns: minmax(0, 1fr); }
   .top .panel { height: auto; }
   .top .chart { height: 190px; flex: none; }
   .top .panel:last-child .body { max-height: 420px; }
 }
-@media (max-width: 640px) {
+/* the table stacks into cards below 900px: its columns don't fit a narrower screen */
+@media (max-width: 900px) {
   thead { display: none; }
   table, tbody, tr, td { display: block; width: 100%; }
   tr.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 4px; border-bottom: 1px solid var(--grid); }
@@ -153,12 +239,11 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
   tr.row td.c-rank { display: none; }
   tr.row td.c-place { grid-column: 1 / -1; }
   tr.row td.c-types { grid-column: 1 / -1; margin-top: 4px; }
-  tr.row td.c-last { display: none; }
-  tr.row td.c-n .mini .track { display: none; }
+  tr.row td.c-sum { grid-column: 1 / -1; margin-top: 6px; width: auto; min-width: 0; }
+  tr.row td.c-sum:empty { display: none; }
   tr.row td.c-n::before { content: "сигнали "; color: var(--text-3); font-size: 12px; }
   tr.row td.c-people::before { content: "доброволци "; color: var(--text-3); font-size: 12px; }
   tr.row td.c-n, tr.row td.c-people { text-align: left; }
-  tr.row td.c-n .mini { justify-content: flex-start; display: inline-flex; }
 }
 </style>
 </head>
@@ -169,20 +254,24 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
       <h1>Сигнали от видеонаблюдение</h1>
       <p class="sub" id="formName">Избори 25 октомври 2026</p>
       <div class="live"><span class="dot" id="dot"></span><span id="status">Зареждане…</span></div>
+      <p class="note">
+        Сигналите се подават от доброволци, които гледат видеоизлъчването от секциите на
+        <a href="https://evideo.bg/" target="_blank" rel="noopener">evideo.bg</a>. Сигналите не са проверени и не доказват нарушение.
+      </p>
     </div>
-    <section class="kpis" aria-label="Обобщение">
-      <div class="kpi"><div class="v" id="kTotal">–</div><div class="l" id="kTotalL">сигнала</div></div>
-      <div class="kpi"><div class="v" id="kSections">–</div><div class="l">секции със сигнали за нередности</div></div>
-      <div class="kpi"><div class="v" id="kPeople">–</div><div class="l" id="kPeopleL">доброволци подали поне един сигнал</div></div>
-      <div class="kpi"><div class="v" id="kLast">–</div><div class="l">последно подаден сигнал</div></div>
-    </section>
+    <div class="hside">
+      <section class="kpis" aria-label="Обобщение">
+        <div class="kpi"><div class="v" id="kTotal">–</div><div class="l" id="kTotalL">сигнала</div></div>
+        <div class="kpi"><div class="v" id="kSections">–</div><div class="l">секции със сигнали за нередности</div></div>
+        <div class="kpi"><div class="v" id="kPeople">–</div><div class="l" id="kPeopleL">доброволци подали поне един сигнал</div></div>
+        <div class="kpi"><div class="v" id="kLast">–</div><div class="l">последно подаден сигнал</div></div>
+      </section>
+      <section class="ticker" id="tkHead" aria-label="Обобщения на сигнали" aria-live="off">
+        <div class="tk-row"><span class="tk-label">От сигналите <span class="ai" tabindex="0" role="img" aria-label="Обобщения от изкуствен интелект" data-tip="ai"></span></span><span class="tk-btns"></span></div>
+        <div class="tk-text"><span class="tk-go"></span><div class="tk-meta"></div></div>
+      </section>
+    </div>
   </header>
-
-  <div class="note">
-    Сигналите се подават от доброволци, които гледат видеоизлъчването от секциите на
-    <a href="https://evideo.bg/" target="_blank" rel="noopener">evideo.bg</a>. Сигналите не са проверени и не доказват нарушение.
-    Затова секциите са подредени по броя на <b>различните доброволци</b>, подали сигнал, а не само по броя сигнали.
-  </div>
 
   <div class="top">
     <section class="panel">
@@ -202,9 +291,10 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
     </section>
   </div>
 
-  <section class="panel">
+  <section class="panel" id="secPanel">
+    <div class="sticky" id="secHead">
     <h2>Секции</h2>
-    <p class="hint">Натиснете ред, за да видите отделните сигнали. Адресите са по данни на ЦИК.</p>
+    <p class="hint">Подредени по броя на различните доброволци, подали сигнал. Натиснете секция за адреса и отделните сигнали.</p>
     <div class="controls">
       <input id="q" type="search" placeholder="Търсене: номер на секция, населено място, адрес" aria-label="Търсене">
       <select id="fType" aria-label="Вид нередност"><option value="">Всички видове</option></select>
@@ -214,11 +304,13 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
         <option value="people">Най-много доброволци</option>
         <option value="n">Най-много сигнали</option>
         <option value="last">Най-скорошен сигнал</option>
+        <option value="sev">Най-сериозни сигнали</option>
       </select>
+    </div>
     </div>
     <table>
       <thead><tr>
-        <th>#</th><th>Секция</th><th>Място</th><th class="num">Сигнали</th><th class="num">Доброволци</th><th>Видове</th><th class="num">Последен</th>
+        <th>#</th><th>Секция</th><th>Място</th><th class="num">Сигнали</th><th class="num">Доброволци</th><th>Видове</th><th class="c-sum">Последен сигнал <span class="ai" tabindex="0" role="img" aria-label="Обобщения от изкуствен интелект" data-tip="ai"></span></th>
       </tr></thead>
       <tbody id="rows"></tbody>
     </table>
@@ -232,6 +324,7 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
   </footer>
 </div>
 <div class="tip" id="tip" role="tooltip"></div>
+<button type="button" class="totop" id="toTop" aria-label="Към началото на страницата" title="Към началото"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button>
 
 <script>
 // evideo.bg folder of this election, e.g. "pe202604"; empty links to the home page.
@@ -249,6 +342,42 @@ const dayHm = new Intl.DateTimeFormat("bg-BG", { timeZone: "Europe/Sofia", day: 
 const cleanType = (t) => t.replace(/^[^\p{L}\p{N}]+/u, "").trim();   // the form's option emojis
 const title = (s) => s ? s.charAt(0) + s.slice(1).toLowerCase() : s;
 const settlement = (s) => (s || "").replace(/^(ГР|С)\.\s*/i, (m) => m.toLowerCase());
+
+const COLS = 7;
+
+// The form's types: a short label with an emoji for the table, the full text elsewhere.
+const TYPE_SHORT = {
+  "Камерата е неправилно поставена": ["📷", "Лош кадър"],
+  "Камерата е препречена": ["🚧", "Препречена камера"],
+  "Неправилно поставена или препречена камера": ["📷", "Камера"],
+  "Не е започнало излъчването": ["⛔", "Без излъчване"],
+  "Излъчването спря неочаквано": ["⏹️", "Спряло излъчване"],
+  "Не се чува звук от видеото": ["🔇", "Без звук"],
+  "Неправилно броене": ["🧮", "Броене"],
+  "Неправилно попълване на протокола": ["📝", "Протокол"],
+  "Спорове и безредици в секцията": ["👊", "Спорове"],
+  "Подаден ми е грешен номер за член на СИК": ["☎️", "Грешен тел. СИК"],
+  "Подаден ми е грешен номер за упълномощен представител": ["☎️", "Грешен тел. УП"],
+  "Друго": ["❓", "Друго"],
+};
+// i -> { emoji, short, long }; an option this list doesn't know keeps its own emoji and full text
+function typeLabel(i) {
+  const long = cleanType(data.options[i] ?? "");
+  const [emoji, short] = TYPE_SHORT[long] ?? [(data.options[i] ?? "").match(/^\p{Extended_Pictographic}️?/u)?.[0] ?? "•", long];
+  return { emoji, short, long };
+}
+
+// ---------- AI summaries ----------
+// A report is [submitted at, time given, type indexes, level, summary]; the last two only when summarised.
+const LEVEL = { red: "Сериозно", amber: "Средно сериозно", green: "Незначително", gray: "Неопределено" };
+const AI_TIP = "Обобщенията в кавички са създадени от изкуствен интелект въз основа на подробностите в оригиналните сигнали. Оригиналните сигнали не се публикуват. Възможни са неточности.";
+const SPARKLES = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>`;
+const sevHtml = (lv) => LEVEL[lv] ? `<span class="sev ${lv}" tabindex="0" role="img" aria-label="${LEVEL[lv]}" data-tip="${LEVEL[lv]}"></span>` : "";
+// mark: in the Секции panel, sparkles after the quote that show on hover
+const sumHtml = (lv, text, mark) => `<span class="sum">${sevHtml(lv)}<q>${esc(text)}</q>${mark ? `<span class="ai-end" aria-hidden="true">${SPARKLES}</span>` : ""}</span>`;
+const summarised = (r) => r.reports.filter((x) => x[4]);
+const SEV_ORDER = ["red", "amber", "green", "gray"];
+const sevCount = (r, lv) => r.reports.reduce((n, x) => n + (x[4] && x[3] === lv), 0);
 
 let data = null, shown = PAGE, open = new Set();
 const state = { q: "", type: "", mir: "", area: "", sort: "people" };
@@ -269,19 +398,56 @@ function showTip(e, html) {
   if (y < 8) y = e.clientY + 16;
   tip.style.left = x + "px"; tip.style.top = y + "px";
 }
-const hideTip = () => (tip.style.opacity = 0);
+const hideTip = () => { tip.style.opacity = 0; tip.classList.remove("wide"); pinned = null; };
+
+// [data-tip]: the severity word or the AI note, on hover, keyboard focus or a tap
+let pinned = null;
+function tipFor(el) {
+  const ai = el.dataset.tip === "ai";
+  tip.textContent = ai ? AI_TIP : el.dataset.tip;
+  tip.classList.toggle("wide", ai);
+  tip.style.opacity = 1;
+  const b = el.getBoundingClientRect(), r = tip.getBoundingClientRect();
+  let x = Math.min(Math.max(8, b.left + b.width / 2 - r.width / 2), innerWidth - r.width - 8);
+  let y = b.top - r.height - 8;
+  if (y < 8) y = b.bottom + 8;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+document.addEventListener("mouseover", (e) => { const el = e.target.closest("[data-tip]"); if (el && !pinned) tipFor(el); });
+document.addEventListener("mouseout", (e) => { const el = e.target.closest("[data-tip]"); if (el && !pinned && !el.contains(e.relatedTarget)) hideTip(); });
+document.addEventListener("focusin", (e) => { const el = e.target.closest("[data-tip]"); if (el) tipFor(el); });
+document.addEventListener("focusout", (e) => { if (e.target.closest("[data-tip]")) hideTip(); });
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-tip]");
+  if (!el) { if (pinned) hideTip(); return; }
+  e.stopPropagation(); e.preventDefault();
+  if (pinned === el) return hideTip();
+  tipFor(el); pinned = el;
+}, true);
+addEventListener("scroll", () => pinned && hideTip(), { passive: true });
 
 // ---------- charts ----------
 function renderTypes() {
   const order = data.options.map((o, i) => [i, data.byType[i]]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...order.map(([, n]) => n));
   $("types").innerHTML = order.map(([i, n]) => `
-    <button class="hbar" data-type="${i}" aria-pressed="${state.type === String(i)}" title="${esc(cleanType(data.options[i]))}">
-      <span class="name">${esc(cleanType(data.options[i]))}</span>
+    <button class="hbar" data-type="${i}" aria-pressed="${state.type === String(i)}" title="${esc(typeLabel(i).long)}">
+      <span class="name">${typeLabel(i).emoji} ${esc(typeLabel(i).long)}</span>
       <span class="track"><span class="fill" style="width:${(n / max) * 100}%;display:block"></span></span>
       <span class="num">${nf.format(n)}</span>
     </button>`).join("") || `<div class="muted">Още няма сигнали.</div>`;
 }
+
+// Short МИР names; the number only where a name repeats (София 23, 24, 25).
+const MIR_SHORT = {
+  "01": "Благоевград", "02": "Бургас", "03": "Варна", "04": "Велико Търново", "05": "Видин", "06": "Враца",
+  "07": "Габрово", "08": "Добрич", "09": "Кърджали", "10": "Кюстендил", "11": "Ловеч", "12": "Монтана",
+  "13": "Пазарджик", "14": "Перник", "15": "Плевен", "16": "Пловдив-град", "17": "Пловдив-област", "18": "Разград",
+  "19": "Русе", "20": "Силистра", "21": "Сливен", "22": "Смолян", "23": "София 23", "24": "София 24",
+  "25": "София 25", "26": "София-област", "27": "Стара Загора", "28": "Търговище", "29": "Хасково", "30": "Шумен",
+  "31": "Ямбол", "32": "Чужбина",
+};
+const mirName = (code, name) => MIR_SHORT[code] ?? `${code} ${title(name)}`;
 
 function renderMirs() {
   const by = new Map();
@@ -292,14 +458,14 @@ function renderMirs() {
   }
   const sel = $("fMir"), cur = state.mir;
   const all = [...by].sort((a, b) => a[0].localeCompare(b[0]));
-  sel.innerHTML = `<option value="">Всички МИР</option>` + all.map(([k, e]) => `<option value="${esc(k)}">${esc(k)} ${esc(title(e.name))}</option>`).join("");
+  sel.innerHTML = `<option value="">Всички МИР</option>` + all.map(([k, e]) => `<option value="${esc(k)}">${esc(mirName(k, e.name))}</option>`).join("");
   sel.value = cur;
 
   const bars = (list, attr, pressed) => {
     const max = Math.max(1, ...list.map((x) => x.n));
     return list.map((x) => `
     <button class="hbar mir" data-${attr}="${esc(x.key)}" aria-pressed="${pressed === x.key}">
-      <span class="name">${esc(x.label)} <span class="muted">· ${x.s} секц.</span></span>
+      <span class="name">${esc(x.label)}</span>
       <span class="track"><span class="fill" style="width:${(x.n / max) * 100}%;display:block"></span></span>
       <span class="num">${nf.format(x.n)}</span>
     </button>`).join("") || `<div class="muted">Още няма сигнали.</div>`;
@@ -309,7 +475,7 @@ function renderMirs() {
     $("mirTitle").textContent = "Сигнали по МИР";
     $("mirHint").textContent = "Натиснете МИР, за да видите сигналите по общини.";
     $("mirBack").hidden = true;
-    $("mirs").innerHTML = bars([...by].map(([k, e]) => ({ key: k, label: `${k} ${title(e.name)}`, n: e.n, s: e.s })).sort((a, b) => b.n - a.n), "mir", "");
+    $("mirs").innerHTML = bars([...by].map(([k, e]) => ({ key: k, label: mirName(k, e.name), n: e.n, s: e.s })).sort((a, b) => b.n - a.n), "mir", "");
     return;
   }
   const sub = new Map();
@@ -320,7 +486,7 @@ function renderMirs() {
     e.n += r.n; e.s++; sub.set(k, e);
   }
   const rayons = [...sub.keys()].some((k) => k.startsWith("р-н"));
-  $("mirTitle").textContent = `МИР ${state.mir} ${title(by.get(state.mir)?.name ?? "")}`;
+  $("mirTitle").textContent = `МИР ${mirName(state.mir, by.get(state.mir)?.name ?? "")}`;
   $("mirHint").textContent = `Сигнали по ${rayons ? "райони и общини" : "общини"}. Натиснете, за да филтрирате секциите.`;
   $("mirBack").hidden = false;
   $("mirs").innerHTML = bars([...sub.values()].sort((a, b) => b.n - a.n), "area", state.area);
@@ -385,31 +551,35 @@ function filtered() {
     (!q || r.id.includes(q.replace(/\s/g, "")) || r.place.slice(1, 7).join(" ").toLowerCase().includes(q)));
   const k = state.sort;
   const n = (r) => (t === null ? r.n : r.types[t]);
+  const sev = (r) => SEV_ORDER.slice(0, 2).map((lv) => sevCount(r, lv));
   rows = rows.slice().sort((a, b) =>
     k === "last" ? (a.last < b.last ? 1 : -1) :
+    k === "sev" ? sev(b)[0] - sev(a)[0] || sev(b)[1] - sev(a)[1] || b.people - a.people :
     k === "n" ? n(b) - n(a) || b.people - a.people :
     b.people - a.people || n(b) - n(a));
   return rows;
 }
 
 function placeHtml(p) {
-  const [, , obl, obsh, ray, st, addr] = p;
+  const [, , , obsh, ray, st] = p;
   if (!obsh) return `<div class="place">Чужбина</div>`;
-  if (!st) return `<div class="place">${esc([ray ? `р-н ${title(ray)}` : "", `общ. ${title(obsh)}`].filter(Boolean).join(", "))}</div><div class="addr">Секцията не е в списъка на ЦИК (вероятно създадена по-късно)</div>`;
+  if (!st) return `<div class="place">${esc([ray ? `р-н ${title(ray)}` : "", `общ. ${title(obsh)}`].filter(Boolean).join(", "))}</div>`;
   const where = [settlement(st), ray ? `р-н ${title(ray)}` : "", obsh && settlement(st).toUpperCase().indexOf(obsh) < 0 ? `общ. ${title(obsh)}` : ""].filter(Boolean).join(", ");
-  return `<div class="place">${esc(where)}</div><div class="addr">${esc(addr)}</div>`;
+  return `<div class="place">${esc(where)}</div>`;
 }
 
 function typesHtml(r) {
   return `<div class="chips">` + r.types.map((c, i) => [i, c]).filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1])
-    .map(([i, c]) => `<span class="chip">${esc(cleanType(data.options[i]))} <b>${c}</b></span>`).join("") + `</div>`;
+    .map(([i, c]) => { const t = typeLabel(i); return `<span class="chip" title="${esc(t.long)}" aria-label="${esc(t.long)}: ${c}">${t.emoji} ${esc(t.short)} <b>${c}</b></span>`; }).join("") + `</div>`;
 }
 
 function detailHtml(r) {
   const p = r.place;
-  const reports = r.reports.slice().reverse().map(([at, told, types]) => `<li><span class="t">${dayHm.format(new Date(at))}</span>${told ? ` <span class="muted">(нередност в ${esc(told)})</span>` : ""} – ${types.map((i) => esc(cleanType(data.options[i]))).join(", ") || "<span class='muted'>без посочен вид</span>"}</li>`).join("");
+  const reports = r.reports.slice().reverse().map(([at, told, types, lv, text]) => `<li><span class="t">${dayHm.format(new Date(at))}</span>${told ? ` <span class="muted">(нередност в ${esc(told)})</span>` : ""} – ${types.map((i) => `${typeLabel(i).emoji} ${esc(typeLabel(i).long)}`).join(", ") || "<span class='muted'>без посочен вид</span>"}${text ? `<span class="s">${sumHtml(lv, text, true)}</span>` : ""}</li>`).join("");
+  const addr = !p[3] ? "" : p[5] ? `<span>${esc(p[6])}</span>` : `<span>Секцията не е в списъка на ЦИК (вероятно създадена по-късно)</span>`;
   return `<div class="meta">
-      <span>МИР ${esc(p[0])} ${esc(title(p[1]))}</span>
+      ${addr}
+      <span>МИР ${esc(mirName(p[0], p[1]))}</span>
       ${p[2] ? `<span>обл. ${esc(title(p[2]))}</span>` : ""}
       ${p[7] != null ? `<span>${nf.format(p[7])} избиратели в списъка</span>` : ""}
       <a href="${evideoUrl(p[0])}" target="_blank" rel="noopener">Гледай излъчването на evideo.bg ↗</a>
@@ -422,19 +592,19 @@ function renderRows() {
   const rows = filtered();
   const t = state.type === "" ? null : +state.type;
   const nOf = (r) => (t === null ? r.n : r.types[t]);
-  const max = Math.max(1, ...rows.map(nOf));
   const page = rows.slice(0, shown);
   $("rows").innerHTML = page.map((r, i) => {
+    const sums = summarised(r), latest = sums[sums.length - 1];
     const row = `<tr class="row" data-id="${r.id}" tabindex="0" aria-expanded="${open.has(r.id)}">
       <td class="c-rank muted">${i + 1}</td>
       <td class="c-sid"><span class="sid">${r.id}</span></td>
       <td class="c-place">${placeHtml(r.place)}</td>
-      <td class="num c-n"><div class="mini"><span class="track"><span class="fill" style="width:${(nOf(r) / max) * 100}%;display:block"></span></span>${nOf(r)}</div></td>
+      <td class="num c-n">${nOf(r)}</td>
       <td class="num c-people">${r.people}</td>
       <td class="c-types">${typesHtml(r)}</td>
-      <td class="num c-last">${hm.format(new Date(r.last))}</td></tr>`;
-    return row + (open.has(r.id) ? `<tr class="detail"><td colspan="7">${detailHtml(r)}</td></tr>` : "");
-  }).join("") || `<tr><td colspan="7" class="empty">${data.rows.length ? "Няма секции, които отговарят на търсенето." : "Още няма подадени сигнали."}</td></tr>`;
+      <td class="c-sum">${latest ? sumHtml(latest[3], latest[4], true) : ""}</td></tr>`;
+    return row + (open.has(r.id) ? `<tr class="detail"><td colspan="${COLS}">${detailHtml(r)}</td></tr>` : "");
+  }).join("") || `<tr><td colspan="${COLS}" class="empty">${data.rows.length ? "Няма секции, които отговарят на търсенето." : "Още няма подадени сигнали."}</td></tr>`;
   $("moreBtn").hidden = rows.length <= shown;
   $("moreBtn").textContent = `Покажи още (${nf.format(rows.length - shown)})`;
 }
@@ -448,11 +618,86 @@ function renderAll() {
   $("kPeopleL").textContent = data.reporters === 1 ? "доброволец подал поне един сигнал" : "доброволци подали поне един сигнал";
   $("kLast").textContent = data.last ? hm.format(new Date(data.last)) + " ч." : "–";
   const sel = $("fType"), cur = state.type;
-  sel.innerHTML = `<option value="">Всички видове</option>` + data.options.map((o, i) => `<option value="${i}">${esc(cleanType(o))}</option>`).join("");
+  sel.innerHTML = `<option value="">Всички видове</option>` + data.options.map((o, i) => `<option value="${i}">${typeLabel(i).emoji} ${esc(typeLabel(i).long)}</option>`).join("");
   sel.value = cur;
-  renderTypes(); renderMirs(); renderTimeline(); renderRows();
+  renderTypes(); renderMirs(); renderTimeline(); renderRows(); tickerData();
   $("unknownNote").hidden = !data.unknown;
   $("unknownNote").textContent = `${signals(data.unknown)} ${data.unknown === 1 ? "е" : "са"} с номер, който не е на секция (най-често грешно въведен), и не ${data.unknown === 1 ? "е включен" : "са включени"} в таблото.`;
+}
+
+// ---------- ticker: a summary from a random section every few seconds ----------
+const TICK_MS = 7000;
+const tk = { el: null, pool: [], hist: [], pos: -1, paused: false, hover: false, since: 0 };
+function shortPlace(p) {
+  if (!p[3]) return "Чужбина";
+  return [p[5] ? settlement(p[5]) : `общ. ${title(p[3])}`, p[4] ? `р-н ${title(p[4])}` : ""].filter(Boolean).join(", ");
+}
+const svgIcon = (d) => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICON = {
+  prev: svgIcon('<path d="m15 18-6-6 6-6"/>'),
+  next: svgIcon('<path d="m9 18 6-6-6-6"/>'),
+  pause: svgIcon('<rect x="7" y="5" width="3" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="5" width="3" height="14" rx="1" fill="currentColor" stroke="none"/>'),
+  play: svgIcon('<path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/>'),
+};
+function tickerInit() {
+  tk.el = $("tkHead");
+  tk.el.querySelector(".tk-btns").innerHTML =
+    `<button type="button" data-tk="prev" aria-label="Предишно обобщение">${ICON.prev}</button><button type="button" data-tk="pause" aria-label="Спри">${ICON.pause}</button><button type="button" data-tk="next" aria-label="Следващо обобщение">${ICON.next}<svg class="ring" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" pathLength="100"/></svg></button>`;
+  tk.el.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-tk]");
+    if (b?.dataset.tk === "next") return tickerStep(1);
+    if (b?.dataset.tk === "prev") return tickerStep(-1);
+    if (b?.dataset.tk === "pause") { tk.paused = !tk.paused; b.innerHTML = tk.paused ? ICON.play : ICON.pause; b.setAttribute("aria-label", tk.paused ? "Пусни" : "Спри"); tk.since = Date.now(); return progress(); }
+    const go = e.target.closest(".tk-go, .tk-meta a");
+    if (go && tk.hist[tk.pos]) { e.preventDefault(); goToSection(tk.hist[tk.pos].id); }
+  });
+  tk.el.addEventListener("mouseenter", () => { tk.hover = true; progress(); });
+  tk.el.addEventListener("mouseleave", () => { tk.hover = false; tk.since = Date.now(); progress(); });
+  setInterval(() => {
+    if (!tk.paused && !tk.hover && !document.hidden && !tk.el.contains(document.activeElement) && Date.now() - tk.since >= TICK_MS - 50) tickerStep(1);
+  }, 250);
+}
+function tickerData() {
+  tk.pool = data.rows.filter((r) => r.reports.some((x) => x[4]));
+  tk.el.style.display = tk.pool.length ? "" : "none";
+  if (tk.pos < 0 && tk.pool.length) tickerStep(1);
+}
+function tickerPick() {
+  const last = tk.hist[tk.hist.length - 1]?.id;
+  const rows = tk.pool.length > 1 ? tk.pool.filter((r) => r.id !== last) : tk.pool;
+  const r = rows[Math.floor(Math.random() * rows.length)];
+  const s = summarised(r);
+  const x = s[Math.floor(Math.random() * s.length)];
+  return { id: r.id, place: r.place, at: x[0], lv: x[3], text: x[4] };
+}
+function tickerStep(d) {
+  if (!tk.pool.length) return;
+  if (d > 0 && tk.pos === tk.hist.length - 1) { tk.hist.push(tickerPick()); if (tk.hist.length > 50) tk.hist.shift(); tk.pos = tk.hist.length - 1; }
+  else tk.pos = Math.max(0, Math.min(tk.hist.length - 1, tk.pos + d));
+  const it = tk.hist[tk.pos], box = tk.el.querySelector(".tk-text");
+  const paint = () => {
+    tk.el.querySelector(".tk-go").innerHTML = sumHtml(it.lv, it.text);
+    tk.el.querySelector(".tk-meta").innerHTML = `<a href="#rows">Секция ${esc(it.id)}</a> · ${esc(shortPlace(it.place))} · ${hm.format(new Date(it.at))} ч.`;
+    box.classList.remove("fade");
+    const ai = tk.el.querySelector(".tk-label .ai"); ai.classList.remove("tw"); void ai.offsetWidth; ai.classList.add("tw");
+  };
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !tk.el.querySelector(".tk-go").innerHTML) paint();
+  else { box.classList.add("fade"); setTimeout(paint, 350); }
+  tk.since = Date.now(); progress();
+}
+// the next button's border fills up until the next summary
+function progress() {
+  const c = tk.el?.querySelector(".ring circle"); if (!c) return;
+  c.style.transition = "none"; c.style.strokeDashoffset = "100";
+  if (tk.paused || tk.hover || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  void c.getBoundingClientRect();
+  c.style.transition = `stroke-dashoffset ${TICK_MS}ms linear`; c.style.strokeDashoffset = "0";
+}
+function goToSection(id) {
+  state.q = id; $("q").value = id; state.type = ""; state.mir = ""; state.area = "";
+  $("fType").value = ""; $("fMir").value = "";
+  open.add(id); rerender();
+  $("rows").closest(".panel").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
 }
 
 // ---------- data ----------
@@ -467,7 +712,7 @@ async function load() {
     const key = text.replace(/"updated":"[^"]*",/, "");
     if (key !== lastKey) { lastKey = key; data = JSON.parse(text); renderAll(); }
   } catch (e) {
-    if (!data) $("rows").innerHTML = `<tr><td colspan="7" class="empty">Данните не можаха да се заредят. Ще опитаме отново след минута.</td></tr>`;
+    if (!data) $("rows").innerHTML = `<tr><td colspan="${COLS}" class="empty">Данните не можаха да се заредят. Ще опитаме отново след минута.</td></tr>`;
   }
   status();
 }
@@ -507,9 +752,27 @@ function toggle(tr) {
   open.has(id) ? open.delete(id) : open.add(id);
   renderRows();
 }
-$("rows").addEventListener("click", (e) => { if (e.target.closest("a")) return; const tr = e.target.closest("tr.row"); if (tr) toggle(tr); });
+$("rows").addEventListener("click", (e) => {
+  if (e.target.closest("a")) return;
+  const tr = e.target.closest("tr.row");
+  if (tr) toggle(tr);
+});
 $("rows").addEventListener("keydown", (e) => { const tr = e.target.closest("tr.row"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggle(tr); } });
 
+// the frozen Секции header: a shadow once it sticks, and the table's own header just under it
+const secHead = $("secHead");
+const headH = () => document.documentElement.style.setProperty("--head-h", secHead.offsetHeight + "px");
+new ResizeObserver(headH).observe(secHead); headH();
+addEventListener("scroll", () => {
+  secHead.classList.toggle("stuck", secHead.getBoundingClientRect().top <= 0 && $("secPanel").getBoundingClientRect().top < 0);
+  $("toTop").classList.toggle("show", scrollY > 700);
+}, { passive: true });
+$("toTop").addEventListener("click", () => scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
+
+// the sparkles beside the titles
+document.querySelectorAll("span.ai:empty").forEach((el) => (el.innerHTML = SPARKLES));
+
+tickerInit();
 load();
 </script>
 </body>
