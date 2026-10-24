@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { relative, resolve, isAbsolute, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { formOptions, questionIds } from "../src/aggregate.js";
-import { makeClient, summarize } from "../src/summarize.js";
+import { makeClient, placeNames, summarize } from "../src/summarize.js";
 
 const fail = (msg) => { console.error(msg); process.exit(1); };
 const [file, keyFile, out, limit] = process.argv.slice(2);
@@ -53,7 +53,8 @@ if (!todo.length) fail("nothing to summarise");
 const client = await makeClient(readFileSync(keyFile, "utf8").trim());
 const usage = {};
 const t0 = Date.now();
-const res = await summarize(client, todo, usage, { deadline: Infinity });
+const places = placeNames(JSON.parse(readFileSync(new URL("../src/sections.json", import.meta.url), "utf8")));
+const res = await summarize(client, todo, usage, { deadline: Infinity, places });
 const cost = (usage.input * 4 + usage.output * 20) / 1e6;
 const count = {};
 for (const r of res.values()) for (const k of [r.verdict, r.level]) if (k) count[k] = (count[k] ?? 0) + 1;

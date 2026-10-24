@@ -12,8 +12,11 @@ export function questionIds(questions) {
     else if (x.type === "INPUT_TIME" && !q.time) q.time = x.id;
     else if (x.type === "MULTIPLE_CHOICE" || x.type === "CHECKBOXES") q.types ??= x.id;
     else if (x.type === "INPUT_EMAIL" && !q.email) q.email = x.id;
-    else if ((x.type === "TEXTAREA" || x.type === "INPUT_TEXT") && !q.details) q.details = x.id;
+    else if (x.type === "TEXTAREA" && !q.textarea) q.textarea = x.id;
+    else if (x.type === "INPUT_TEXT" && !q.text) q.text = x.id;
   }
+  // the details: the long-text field ("Подробности"); a short-text one only if there is none
+  q.details = q.textarea ?? q.text;
   return q;
 }
 

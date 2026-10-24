@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="bg">
+<html lang="bg" class="noai">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -85,7 +85,7 @@ header .sub { color: var(--text-2); margin: 0; }
 .link { font: inherit; font-size: 13px; color: var(--bar); background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
 .chipx { font: inherit; font-size: 13.5px; color: var(--text); background: var(--bar-soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
 .chipx::after { content: " ✕"; color: var(--text-2); }
-.panel { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(16,24,40,.05); border-radius: 10px; padding: 16px; margin-bottom: 12px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 12px; min-width: 0; }
 .panel h2 { font-size: 16px; margin: 0 0 2px; }
 .panel .hint { color: var(--text-3); font-size: 12.5px; margin: 0 0 12px; }
 .hbars { display: grid; gap: 4px; }
@@ -146,7 +146,6 @@ footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
 /* a bigger invisible target than the mark itself, for a finger */
 .sev, .ai { position: relative; }
 .sev::after, .ai::after { content: ""; position: absolute; inset: -8px -6px; }
-.tip { pointer-events: none; }
 .tip.wide { max-width: 300px; }
 /* Секции: the latest summary in its own column */
 td.c-sum { font-size: 13px; line-height: 1.4; color: var(--text-2); width: 34%; min-width: 16em; }
@@ -154,7 +153,7 @@ th.c-sum { white-space: nowrap; }
 .detail li .s { display: block; margin: 2px 0 6px; color: var(--text-2); }
 /* ticker: in the header, under the numbers */
 header .hside { display: flex; flex-direction: column; gap: 10px; }
-#tkHead { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 10px 14px; width: calc(4 * 11em + 30px); max-width: 100%; }
+#tkHead { background: var(--ai-soft); border: 1px solid transparent; border-left: 4px solid var(--ai); border-radius: 10px; padding: 10px 12px 10px 14px; width: calc(4 * 11em + 30px); max-width: 100%; }
 .tk-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
 .tk-text { transition: opacity .35s; }
 .tk-text.fade { opacity: 0; }
@@ -196,14 +195,12 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
 @media (prefers-reduced-motion: reduce) { .tk-label .ai.tw svg { animation: none; } }
 
 /* what the eye goes to first: the AI card, then the numbers, then the types panel */
-#tkHead { background: var(--ai-soft); border: 1px solid transparent; border-left: 4px solid var(--ai); }
 .tk-go { font-size: 16px; font-weight: 500; }
 .tk-label { color: var(--ai); }
 .kpi { box-shadow: 0 1px 3px rgba(16,24,40,.08); border-color: transparent; }
 .kpi .v { font-size: clamp(26px, 2.8vw, 34px); font-weight: 700; }
 .top .panel:first-child { background: var(--bar-tint); border-color: transparent; }
 .top .panel:first-child .hbar .track { height: 14px; }
-.panel { box-shadow: none; }
 
 /* the numbers and the AI card no longer fit beside the title: the title and the note
    share the first row, the numbers and the card take the full width under them */
@@ -378,9 +375,9 @@ function typeLabel(i) {
 const LEVEL = { red: "Сериозно", amber: "Средно сериозно", green: "Незначително", gray: "Неопределено" };
 const AI_TIP = "Обобщенията в кавички са създадени от изкуствен интелект въз основа на подробностите в оригиналните сигнали. Оригиналните сигнали не се публикуват. Възможни са неточности.";
 const SPARKLES = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>`;
-const sevHtml = (lv) => LEVEL[lv] ? `<span class="sev ${lv}" tabindex="0" role="img" aria-label="${LEVEL[lv]}" data-tip="${LEVEL[lv]}"></span>` : "";
+const sevHtml = (lv, focus = true) => LEVEL[lv] ? `<span class="sev ${lv}"${focus ? ' tabindex="0"' : ""} role="img" aria-label="${LEVEL[lv]}" data-tip="${LEVEL[lv]}"></span>` : "";
 // mark: in the Секции panel, sparkles after the quote that show on hover
-const sumHtml = (lv, text, mark) => `<span class="sum">${sevHtml(lv)}<q>${esc(text)}</q>${mark ? `<span class="ai-end" aria-hidden="true">${SPARKLES}</span>` : ""}</span>`;
+const sumHtml = (lv, text, mark, focus = true) => `<span class="sum">${sevHtml(lv, focus)}<q>${esc(text)}</q>${mark ? `<span class="ai-end" aria-hidden="true">${SPARKLES}</span>` : ""}</span>`;
 const summarised = (r) => r.reports.filter((x) => x[4]);
 const SEV_ORDER = ["red", "amber", "green", "gray"];
 const sevCount = (r, lv) => r.reports.reduce((n, x) => n + (x[4] && x[3] === lv), 0);
@@ -396,29 +393,30 @@ function evideoUrl(mir) {
 
 // ---------- tooltip ----------
 const tip = $("tip");
-function showTip(e, html) {
-  tip.innerHTML = html; tip.style.opacity = 1;
+// centred on x, above top, or below bottom when there is no room; inside the window
+function placeTip(x, top, bottom) {
   const r = tip.getBoundingClientRect();
-  let x = e.clientX + 12, y = e.clientY - r.height - 10;
-  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 12;
-  if (y < 8) y = e.clientY + 16;
-  tip.style.left = x + "px"; tip.style.top = y + "px";
+  tip.style.left = Math.min(Math.max(8, x - r.width / 2), innerWidth - r.width - 8) + "px";
+  tip.style.top = (top - r.height - 8 < 8 ? bottom + 8 : top - r.height - 8) + "px";
 }
-const hideTip = () => { tip.style.opacity = 0; tip.classList.remove("wide"); pinned = null; };
+function showTip(e, html) {   // the timeline's columns, at the pointer
+  tip.innerHTML = html; tip.style.opacity = 1;
+  placeTip(e.clientX, e.clientY - 4, e.clientY + 12);
+}
+const hideTip = () => { tip.style.opacity = 0; tip.classList.remove("wide"); pinned = null; tipEl = null; };
 
 // [data-tip]: the severity word or the AI note, on hover, keyboard focus or a tap
-let pinned = null;
+let pinned = null, tipEl = null;
 function tipFor(el) {
   const ai = el.dataset.tip === "ai";
   tip.textContent = ai ? AI_TIP : el.dataset.tip;
   tip.classList.toggle("wide", ai);
-  tip.style.opacity = 1;
-  const b = el.getBoundingClientRect(), r = tip.getBoundingClientRect();
-  let x = Math.min(Math.max(8, b.left + b.width / 2 - r.width / 2), innerWidth - r.width - 8);
-  let y = b.top - r.height - 8;
-  if (y < 8) y = b.bottom + 8;
-  tip.style.left = x + "px"; tip.style.top = y + "px";
+  tip.style.opacity = 1; tipEl = el;
+  const b = el.getBoundingClientRect();
+  placeTip(b.left + b.width / 2, b.top, b.bottom);
 }
+// a redraw replaces the element under the tip without a mouseout: hide it
+const dropTip = (within) => { if (tipEl && within.contains(tipEl)) hideTip(); };
 document.addEventListener("mouseover", (e) => { const el = e.target.closest("[data-tip]"); if (el && !pinned) tipFor(el); });
 document.addEventListener("mouseout", (e) => { const el = e.target.closest("[data-tip]"); if (el && !pinned && !el.contains(e.relatedTarget)) hideTip(); });
 document.addEventListener("focusin", (e) => { const el = e.target.closest("[data-tip]"); if (el) tipFor(el); });
@@ -593,6 +591,7 @@ function detailHtml(r) {
 }
 
 function renderRows() {
+  dropTip($("rows"));
   $("areaChip").hidden = !state.area;
   $("areaChip").textContent = state.area;
   const rows = filtered();
@@ -608,7 +607,7 @@ function renderRows() {
       <td class="num c-n">${nOf(r)}</td>
       <td class="num c-people">${r.people}</td>
       <td class="c-types">${typesHtml(r)}</td>
-      <td class="c-sum">${latest ? sumHtml(latest[3], latest[4], true) : ""}</td></tr>`;
+      <td class="c-sum">${latest ? sumHtml(latest[3], latest[4], true, false) : ""}</td></tr>`;
     return row + (open.has(r.id) ? `<tr class="detail"><td colspan="${COLS}">${detailHtml(r)}</td></tr>` : "");
   }).join("") || `<tr><td colspan="${COLS}" class="empty">${data.rows.length ? "Няма секции, които отговарят на търсенето." : "Още няма подадени сигнали."}</td></tr>`;
   $("moreBtn").hidden = rows.length <= shown;
@@ -633,7 +632,10 @@ function renderAll() {
 
 // ---------- ticker: a summary from a random section every few seconds ----------
 const TICK_MS = 7000;
-const tk = { el: null, pool: [], hist: [], pos: -1, paused: false, hover: false, since: 0 };
+const tk = { el: null, pool: [], hist: [], pos: -1, paused: false, hover: false, since: 0, paintT: 0 };
+// held: paused by the button, a mouse over the card, or keyboard focus in it. A click
+// or a tap is no reason to stop (a clicked button keeps focus; a tap "hovers").
+const held = () => tk.paused || tk.hover || !!tk.el.querySelector(":focus-visible");
 function shortPlace(p) {
   if (!p[3]) return "Чужбина";
   return [p[5] ? settlement(p[5]) : `общ. ${title(p[3])}`, p[4] ? `р-н ${title(p[4])}` : ""].filter(Boolean).join(", ");
@@ -657,10 +659,12 @@ function tickerInit() {
     const go = e.target.closest(".tk-go, .tk-meta a");
     if (go && tk.hist[tk.pos]) { e.preventDefault(); goToSection(tk.hist[tk.pos].id); }
   });
-  tk.el.addEventListener("mouseenter", () => { tk.hover = true; progress(); });
-  tk.el.addEventListener("mouseleave", () => { tk.hover = false; tk.since = Date.now(); progress(); });
+  tk.el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") { tk.hover = true; progress(); } });
+  tk.el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { tk.hover = false; tk.since = Date.now(); progress(); } });
+  tk.el.addEventListener("focusin", () => progress());
+  tk.el.addEventListener("focusout", () => setTimeout(() => { tk.since = Date.now(); progress(); }));
   setInterval(() => {
-    if (!tk.paused && !tk.hover && !document.hidden && !tk.el.contains(document.activeElement) && Date.now() - tk.since >= TICK_MS - 50) tickerStep(1);
+    if (!held() && !document.hidden && Date.now() - tk.since >= TICK_MS - 50) tickerStep(1);
   }, 250);
 }
 // Summaries switched off (data.ai not true): the card, the column and the sort go.
@@ -674,6 +678,7 @@ function tickerData() {
   const waiting = on && !tk.pool.length;
   tk.el.classList.toggle("waiting", waiting);
   if (waiting) {
+    clearTimeout(tk.paintT); dropTip(tk.el);
     tk.hist = []; tk.pos = -1;
     tk.el.querySelector(".tk-go").innerHTML = `<span class="muted">Тук ще се появяват кратки обобщения на сигналите от секциите, щом пристигнат.</span>`;
     tk.el.querySelector(".tk-meta").textContent = "";
@@ -689,24 +694,26 @@ function tickerPick() {
 }
 function tickerStep(d) {
   if (!tk.pool.length || tk.el.classList.contains("waiting")) return;
+  clearTimeout(tk.paintT);
   if (d > 0 && tk.pos === tk.hist.length - 1) { tk.hist.push(tickerPick()); if (tk.hist.length > 50) tk.hist.shift(); tk.pos = tk.hist.length - 1; }
   else tk.pos = Math.max(0, Math.min(tk.hist.length - 1, tk.pos + d));
   const it = tk.hist[tk.pos], box = tk.el.querySelector(".tk-text");
   const paint = () => {
+    dropTip(tk.el);
     tk.el.querySelector(".tk-go").innerHTML = sumHtml(it.lv, it.text);
     tk.el.querySelector(".tk-meta").innerHTML = `<a href="#rows">Секция ${esc(it.id)}</a> · ${esc(shortPlace(it.place))} · ${hm.format(new Date(it.at))} ч.`;
     box.classList.remove("fade");
     const ai = tk.el.querySelector(".tk-label .ai"); ai.classList.remove("tw"); void ai.offsetWidth; ai.classList.add("tw");
   };
   if (matchMedia("(prefers-reduced-motion: reduce)").matches || !tk.el.querySelector(".tk-go").innerHTML) paint();
-  else { box.classList.add("fade"); setTimeout(paint, 350); }
+  else { box.classList.add("fade"); tk.paintT = setTimeout(paint, 350); }
   tk.since = Date.now(); progress();
 }
 // the next button's border fills up until the next summary
 function progress() {
   const c = tk.el?.querySelector(".ring circle"); if (!c) return;
   c.style.transition = "none"; c.style.strokeDashoffset = "100";
-  if (tk.paused || tk.hover || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (held() || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   void c.getBoundingClientRect();
   c.style.transition = `stroke-dashoffset ${TICK_MS}ms linear`; c.style.strokeDashoffset = "0";
 }
@@ -719,7 +726,9 @@ function goToSection(id) {
 
 // ---------- data ----------
 let lastOk = 0, lastKey = "", dataAt = 0;
-const STALE_MS = 5 * 60e3;   // the live data is rebuilt about once a minute
+// the live data is rebuilt about once a minute, but a run that works off a backlog of
+// summaries takes ~3 minutes: data up to ~7 minutes old is normal then
+const STALE_MS = 10 * 60e3;
 async function load() {
   try {
     const r = await fetch(`${DATA_URL}?v=${Math.floor(Date.now() / 60e3)}`, { cache: "no-cache" });
@@ -784,7 +793,7 @@ $("rows").addEventListener("click", (e) => {
   const tr = e.target.closest("tr.row");
   if (tr) toggle(tr);
 });
-$("rows").addEventListener("keydown", (e) => { const tr = e.target.closest("tr.row"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggle(tr); } });
+$("rows").addEventListener("keydown", (e) => { if (e.target.closest("[data-tip]")) return; const tr = e.target.closest("tr.row"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggle(tr); } });
 
 // the frozen Секции header: a shadow once it sticks, and the table's own header just under it
 const secHead = $("secHead");

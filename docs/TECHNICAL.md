@@ -51,8 +51,9 @@ reports on a section; the rest are reported as one count.
 
 ## AI summaries
 
-`src/summarize.js` sends the details of new reports to Claude Opus 5.5 (25
-per request, as JSON with a random id each) and gets back, per report, a
+`src/summarize.js` sends the details of new reports to Claude Opus 5.5 (5
+per request, as JSON with a random id each, so one text can sway only the
+four others in its request) and gets back, per report, a
 verdict, a one-sentence Bulgarian summary and a level:
 
 - **Verdict:** `publish`; `nothing_new` (it only repeats the ticked
@@ -63,7 +64,9 @@ verdict, a one-sentence Bulgarian summary and a level:
   observed properly, or is disorderly), green (technical, minor or resolved),
   gray (not a real report: a joke, spam, unclear).
 - **Checked again in code:** a summary with 6+ digits, `@`, a link or
-  domain, a Latin-script word or over 30 words is withheld as `unsafe`.
+  domain, a Latin-script word or over 30 words is withheld as `unsafe`; so is
+  one with a capitalised word in mid-sentence that the volunteer wrote too and
+  that is no place on ЦИК's list, institution or party (possibly a name).
 
 `src/live-summaries.js` keeps the answers between builds in
 `.cache/summaries.json`, which the workflow restores from and saves to the
@@ -97,6 +100,10 @@ while the repository variable `LIVE` is `true`:
 3. **AI summaries:** they run when the secret `ANTHROPIC_API_KEY` is set. To
    switch them off, and hide the ones already published, set the variable
    `SUMMARIES` to `false`; the next run publishes without them.
+   - They stay in the Actions cache. To make the next runs summarise again
+     from scratch (e.g. after changing the prompt), delete it too:
+     `gh cache delete --all --repo promeni-bg/signali`. To withhold only one
+     bad summary, there is no switch yet: switch them all off.
 4. **evideo.bg links:** when evideo.bg publishes this election's folder (e.g.
    `pe202604` for April), set the variable `EVIDEO_ELECTION` to it. Until
    then, the links go to evideo.bg's home page.
@@ -105,8 +112,9 @@ A push to `main` always deploys once.
 
 **What the page shows when something fails:** it gives the time of its data
 ("Данни към 21:05 ч."). If the build stops working (Tally down, a bad key),
-the data stops changing, and after 5 minutes the page says how long ago it was
-updated, with a grey dot. If the page can't reach its data, it says so and
+the data stops changing, and after 10 minutes the page says how long ago it was
+updated, with a grey dot. (Ten minutes, not five: a run that works off a
+backlog of summaries takes about three.) If the page can't reach its data, it says so and
 keeps what it had. With no reports yet, each panel says so and the AI card
 waits for the first summaries.
 

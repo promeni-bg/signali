@@ -44,8 +44,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      # the exact versions in package-lock.json; no install scripts run
+      # the exact versions in package-lock.json; no install scripts run. If it fails
+      # (e.g. the npm registry is down), the build goes on without new summaries.
       - run: npm ci --ignore-scripts
+        continue-on-error: true
       # the AI summaries made by earlier runs (verdicts and published summaries only)
       - name: Restore the summaries
         uses: actions/cache/restore@v4

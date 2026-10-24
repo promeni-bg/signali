@@ -43,7 +43,7 @@ const t = await fetchTally(form, key);
 const now = new Date();
 const placed = {};
 aggregate(t.form, t.questions, t.submissions, sections, now, placed);
-const sum = await liveSummaries({ ...t, placed: placed.placed, formId: form, apiKey: process.env.ANTHROPIC_API_KEY,
+const sum = await liveSummaries({ ...t, placed: placed.placed, sections, formId: form, apiKey: process.env.ANTHROPIC_API_KEY,
   setting: process.env.SUMMARIES, storePath: process.env.SUMMARIES_STORE || ".cache/summaries.json" });
 console.log(sum.log);
 // the workflow saves the store only when it changed
