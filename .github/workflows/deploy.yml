@@ -1,0 +1,57 @@
+# Builds both dashboards and publishes them to GitHub Pages.
+#
+# On election night, set the repository variable LIVE to "true" and run this
+# workflow once by hand (Actions > Deploy > Run workflow). Each run then starts
+# the next one when it finishes, so the live dashboard refreshes about once a
+# minute; the 5-minute schedule restarts the loop if it ever breaks. Set LIVE to
+# "false" to stop it. A push to main always deploys once.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write
+
+# One run at a time; a newer waiting run replaces an older waiting one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # The schedule only acts while LIVE is on, so it costs nothing the rest of the time.
+    if: github.event_name != 'schedule' || vars.LIVE == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build
+        run: node scripts/build_site.mjs _site
+        env:
+          TALLY_API_KEY: ${{ secrets.TALLY_API_KEY }}
+          TALLY_FORM_ID: ${{ secrets.TALLY_FORM_ID }}  # a secret, so logs mask it
+          EVIDEO_ELECTION: ${{ vars.EVIDEO_ELECTION }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Start the next run
+        if: always() && vars.LIVE == 'true' && github.event_name != 'push'
+        run: gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}

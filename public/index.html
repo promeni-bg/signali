@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сигнали от видеонаблюдение · Избори 25 октомври 2026</title>
+<meta name="description" content="Доброволци гледат видеоизлъчването на преброяването от секциите на evideo.bg и подават сигнали за нередности. Вижте на живо в кои секции има най-много сигнали, какви и кога.">
+<link rel="canonical" href="https://signali.promeni.bg/">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%23d03b3b'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="https://signali.promeni.bg/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="bg_BG">
+<meta property="og:site_name" content="Сигнали от видеонаблюдение">
+<meta property="og:url" content="https://signali.promeni.bg/">
+<meta property="og:title" content="Сигнали от видеонаблюдение · Избори 25 октомври 2026">
+<meta property="og:description" content="Доброволци гледат преброяването на evideo.bg и сигнализират за нередности. Вижте на живо в кои секции има най-много сигнали.">
+<meta property="og:image" content="https://signali.promeni.bg/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Сигнали от видеонаблюдение: секциите, за които доброволци подават сигнали за нередности при преброяването">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Сигнали от видеонаблюдение · Избори 25 октомври 2026">
+<meta name="twitter:description" content="Доброволци гледат преброяването на evideo.bg и сигнализират за нередности. Вижте на живо в кои секции има най-много сигнали.">
+<meta name="twitter:image" content="https://signali.promeni.bg/og.png">
+<meta name="twitter:image:alt" content="Сигнали от видеонаблюдение: секциите, за които доброволци подават сигнали за нередности при преброяването">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --line: #e3e6eb;
+  --grid: #eef0f3;
+  --text: #0f1729;
+  --text-2: #475467;
+  --text-3: #667085;
+  --bar: #1d6fd8;
+  --bar-soft: #e3eefc;
+  --accent: #d92d20;
+  --chip: #f2f4f7;
+  --focus: #1d6fd8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0d1117; --surface: #131a23; --line: #263040; --grid: #1c2430;
+    --text: #f2f4f7; --text-2: #c0c7d2; --text-3: #8d97a5;
+    --bar: #4c8ff0; --bar-soft: #18304f; --chip: #1c2430; --focus: #7fb0f5;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1117; --surface: #131a23; --line: #263040; --grid: #1c2430;
+  --text: #f2f4f7; --text-2: #c0c7d2; --text-3: #8d97a5;
+  --bar: #4c8ff0; --bar-soft: #18304f; --chip: #1c2430; --focus: #7fb0f5;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 1440px; margin: 0 auto; padding: 18px 16px 48px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+header h1 { font-size: clamp(22px, 2.6vw, 28px); line-height: 1.15; margin: 0 0 6px; letter-spacing: -0.01em; }
+header .sub { color: var(--text-2); margin: 0; }
+.live { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; margin-top: 6px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 rgba(208,59,59,.5); animation: pulse 2s infinite; }
+.dot.stale { background: var(--text-3); animation: none; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(208,59,59,0); } 100% { box-shadow: 0 0 0 0 rgba(208,59,59,0); } }
+@media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
+.note { background: var(--chip); border: 1px solid var(--line); border-left: 3px solid var(--bar); border-radius: 8px; padding: 8px 14px; margin: 14px 0; color: var(--text-2); font-size: 13.5px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 11em)); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(16,24,40,.05); border-radius: 10px; padding: 10px 14px; }
+.kpi .v { font-size: clamp(22px, 2.4vw, 28px); font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.kpi .l { color: var(--text-2); font-size: 12.5px; line-height: 1.3; margin-top: 2px; }
+.top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.top .panel { display: flex; flex-direction: column; height: 330px; }
+.top .body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; margin: 0 -6px; }
+.top .chart { overflow: hidden; }
+.phead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.link { font: inherit; font-size: 13px; color: var(--bar); background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
+.chipx { font: inherit; font-size: 13.5px; color: var(--text); background: var(--bar-soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+.chipx::after { content: " ✕"; color: var(--text-2); }
+.panel { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(16,24,40,.05); border-radius: 10px; padding: 16px; margin-bottom: 12px; min-width: 0; }
+.panel h2 { font-size: 16px; margin: 0 0 2px; }
+.panel .hint { color: var(--text-3); font-size: 12.5px; margin: 0 0 12px; }
+.hbars { display: grid; gap: 4px; }
+.hbar { display: grid; grid-template-columns: minmax(0, 52%) minmax(0, 1fr) 3.2em; align-items: center; gap: 10px; padding: 3px 6px; border-radius: 6px; cursor: pointer; border: 0; background: none; color: inherit; font: inherit; text-align: left; width: 100%; }
+.hbar:hover { background: var(--chip); }
+.hbar[aria-pressed="true"] { background: var(--bar-soft); }
+.hbar .name { font-size: 13.5px; line-height: 1.25; overflow-wrap: anywhere; }
+.hbar .track { height: 12px; }
+.hbar .fill { height: 100%; background: var(--bar); border-radius: 0 4px 4px 0; min-width: 2px; }
+.hbar .num { font-variant-numeric: tabular-nums; text-align: right; font-size: 13.5px; color: var(--text-2); }
+.mir { grid-template-columns: minmax(0, 50%) minmax(0, 1fr) 3.2em; }
+#timeline { position: relative; }
+#timeline svg { display: block; overflow: visible; }
+#timeline .axis { fill: var(--text-3); font-size: 11px; }
+#timeline .gridline { stroke: var(--grid); }
+#timeline rect.col { fill: var(--bar); }
+#timeline rect.hit { fill: transparent; }
+#timeline rect.hit:hover + rect.col, #timeline g:hover rect.col { opacity: .75; }
+.tip { position: fixed; pointer-events: none; background: var(--text); color: var(--surface); font-size: 12.5px; padding: 6px 9px; border-radius: 6px; z-index: 10; opacity: 0; transition: opacity .1s; max-width: 260px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+.controls input, .controls select { font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+.controls input { flex: 1 1 220px; }
+.controls select { flex: 0 1 auto; max-width: 100%; width: 15em; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12.5px; color: var(--text-2); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.row { cursor: pointer; }
+tr.row:hover td { background: var(--chip); }
+.sid { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13.5px; white-space: nowrap; }
+.place { font-weight: 550; }
+.addr { color: var(--text-2); font-size: 13px; }
+.mini { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.mini .track { width: 70px; height: 8px; }
+.mini .fill { height: 100%; background: var(--bar); border-radius: 0 3px 3px 0; min-width: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { background: var(--chip); border-radius: 999px; padding: 1px 8px; font-size: 12px; color: var(--text-2); white-space: nowrap; }
+.chip b { color: var(--text); font-weight: 600; }
+tr.detail td { background: var(--bg); padding: 12px 14px 14px; }
+.detail .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--text-2); margin-bottom: 10px; }
+.detail ol { margin: 0; padding-left: 22px; font-size: 13.5px; }
+.detail li { margin: 2px 0; }
+.detail .t { font-variant-numeric: tabular-nums; font-weight: 600; }
+.btn { display: inline-block; font: inherit; font-size: 14px; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; text-decoration: none; }
+.btn:hover { background: var(--chip); }
+a { color: var(--bar); }
+.more { text-align: center; margin-top: 12px; }
+.muted { color: var(--text-3); }
+details summary { cursor: pointer; color: var(--text-2); }
+footer { color: var(--text-3); font-size: 13px; margin-top: 24px; }
+.empty { padding: 28px; text-align: center; color: var(--text-2); }
+@media (max-width: 1100px) {
+  .top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .top .panel:last-child { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  header { display: block; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 14px; }
+  .top { grid-template-columns: minmax(0, 1fr); }
+  .top .panel { height: auto; }
+  .top .chart { height: 190px; flex: none; }
+  .top .panel:last-child .body { max-height: 420px; }
+}
+@media (max-width: 640px) {
+  thead { display: none; }
+  table, tbody, tr, td { display: block; width: 100%; }
+  tr.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 4px; border-bottom: 1px solid var(--grid); }
+  tr.row td { border: 0; padding: 0; background: none !important; }
+  tr.row td.c-rank { display: none; }
+  tr.row td.c-place { grid-column: 1 / -1; }
+  tr.row td.c-types { grid-column: 1 / -1; margin-top: 4px; }
+  tr.row td.c-last { display: none; }
+  tr.row td.c-n .mini .track { display: none; }
+  tr.row td.c-n::before { content: "сигнали "; color: var(--text-3); font-size: 12px; }
+  tr.row td.c-people::before { content: "доброволци "; color: var(--text-3); font-size: 12px; }
+  tr.row td.c-n, tr.row td.c-people { text-align: left; }
+  tr.row td.c-n .mini { justify-content: flex-start; display: inline-flex; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="titles">
+      <h1>Сигнали от видеонаблюдение</h1>
+      <p class="sub" id="formName">Избори 25 октомври 2026</p>
+      <div class="live"><span class="dot" id="dot"></span><span id="status">Зареждане…</span></div>
+    </div>
+    <section class="kpis" aria-label="Обобщение">
+      <div class="kpi"><div class="v" id="kTotal">–</div><div class="l">сигнала</div></div>
+      <div class="kpi"><div class="v" id="kSections">–</div><div class="l">секции със сигнали за нередности</div></div>
+      <div class="kpi"><div class="v" id="kPeople">–</div><div class="l">доброволци подали поне един сигнал</div></div>
+      <div class="kpi"><div class="v" id="kLast">–</div><div class="l">последно подаден сигнал</div></div>
+    </section>
+  </header>
+
+  <div class="note">
+    Сигналите се подават от доброволци, които гледат видеоизлъчването от секциите на
+    <a href="https://evideo.bg/" target="_blank" rel="noopener">evideo.bg</a>. Сигналите не са проверени и не доказват нарушение.
+    Затова секциите са подредени по броя на <b>различните доброволци</b>, подали сигнал, а не само по броя сигнали.
+  </div>
+
+  <div class="top">
+    <section class="panel">
+      <h2>Сигнали по вид нередност</h2>
+      <p class="hint">Един сигнал може да посочи няколко вида. Натиснете вид сигнал, за да филтрирате секциите.</p>
+      <div class="body"><div class="hbars" id="types"></div></div>
+    </section>
+    <section class="panel">
+      <h2>Сигнали във времето</h2>
+      <p class="hint">Брой подадени сигнали на всеки 15 минути, българско време.<span id="timelineNote"></span></p>
+      <div class="body chart" id="timeline"></div>
+    </section>
+    <section class="panel">
+      <div class="phead"><h2 id="mirTitle">Сигнали по МИР</h2><button class="link" id="mirBack" hidden>← Всички МИР</button></div>
+      <p class="hint" id="mirHint">Натиснете МИР, за да видите сигналите по общини.</p>
+      <div class="body"><div class="hbars" id="mirs"></div></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>Секции</h2>
+    <p class="hint">Натиснете ред, за да видите отделните сигнали. Адресите са по данни на ЦИК.</p>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Търсене: номер на секция, населено място, адрес" aria-label="Търсене">
+      <select id="fType" aria-label="Вид нередност"><option value="">Всички видове</option></select>
+      <select id="fMir" aria-label="МИР"><option value="">Всички МИР</option></select>
+      <button class="chipx" id="areaChip" hidden title="Махни филтъра"></button>
+      <select id="sort" aria-label="Подреждане">
+        <option value="people">Най-много доброволци</option>
+        <option value="n">Най-много сигнали</option>
+        <option value="last">Най-скорошен сигнал</option>
+      </select>
+    </div>
+    <table>
+      <thead><tr>
+        <th>#</th><th>Секция</th><th>Място</th><th class="num">Сигнали</th><th class="num">Доброволци</th><th>Видове</th><th class="num">Последен</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="more"><button class="btn" id="moreBtn" hidden>Покажи още</button></div>
+  </section>
+
+  <section class="panel" id="unknownBox" hidden>
+    <details>
+      <summary><span id="unknownTitle"></span></summary>
+      <p class="hint" style="margin-top:8px">Номера, които не съвпадат с нито една секция в списъка на ЦИК, най-често грешно въведени.</p>
+      <div class="chips" id="unknown"></div>
+    </details>
+  </section>
+
+  <footer>
+    Данните се обновяват автоматично всяка минута. Имейлите, подробностите и снимките от сигналите не се публикуват.
+    Секции и адреси: ЦИК, „Адреси на избирателните секции“ и „Общ брой секции и избиратели“, 2026.
+  </footer>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+// evideo.bg folder of this election, e.g. "pe202604"; empty links to the home page.
+const EVIDEO_ELECTION = "";
+const DATA_URL = "api/data.json";
+const REFRESH_MS = 60_000;
+const PAGE = 20;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const nf = new Intl.NumberFormat("bg-BG");
+const hm = new Intl.DateTimeFormat("bg-BG", { timeZone: "Europe/Sofia", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const dayHm = new Intl.DateTimeFormat("bg-BG", { timeZone: "Europe/Sofia", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const cleanType = (t) => t.replace(/^[^\p{L}\p{N}]+/u, "").trim();   // the form's option emojis
+const title = (s) => s ? s.charAt(0) + s.slice(1).toLowerCase() : s;
+const settlement = (s) => (s || "").replace(/^(ГР|С)\.\s*/i, (m) => m.toLowerCase());
+
+let data = null, shown = PAGE, open = new Set();
+const state = { q: "", type: "", mir: "", area: "", sort: "people" };
+// Inside a МИР: the административен район where there is one (София, Пловдив, Варна), else the община.
+const area = (p) => p[4] ? `р-н ${title(p[4])}` : p[3] ? `общ. ${title(p[3])}` : "Чужбина";
+
+function evideoUrl(mir) {
+  return EVIDEO_ELECTION ? `https://evideo.bg/${EVIDEO_ELECTION}/${mir}.html` : "https://evideo.bg/";
+}
+
+// ---------- tooltip ----------
+const tip = $("tip");
+function showTip(e, html) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 12, y = e.clientY - r.height - 10;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 12;
+  if (y < 8) y = e.clientY + 16;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => (tip.style.opacity = 0);
+
+// ---------- charts ----------
+function renderTypes() {
+  const order = data.options.map((o, i) => [i, data.byType[i]]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(1, ...order.map(([, n]) => n));
+  $("types").innerHTML = order.map(([i, n]) => `
+    <button class="hbar" data-type="${i}" aria-pressed="${state.type === String(i)}" title="${esc(cleanType(data.options[i]))}">
+      <span class="name">${esc(cleanType(data.options[i]))}</span>
+      <span class="track"><span class="fill" style="width:${(n / max) * 100}%;display:block"></span></span>
+      <span class="num">${nf.format(n)}</span>
+    </button>`).join("") || `<div class="muted">Още няма сигнали.</div>`;
+}
+
+function renderMirs() {
+  const by = new Map();
+  for (const r of data.rows) {
+    const k = r.place[0];
+    const e = by.get(k) ?? { name: r.place[1], n: 0, s: 0 };
+    e.n += r.n; e.s++; by.set(k, e);
+  }
+  const sel = $("fMir"), cur = state.mir;
+  const all = [...by].sort((a, b) => a[0].localeCompare(b[0]));
+  sel.innerHTML = `<option value="">Всички МИР</option>` + all.map(([k, e]) => `<option value="${esc(k)}">${esc(k)} ${esc(title(e.name))}</option>`).join("");
+  sel.value = cur;
+
+  const bars = (list, attr, pressed) => {
+    const max = Math.max(1, ...list.map((x) => x.n));
+    return list.map((x) => `
+    <button class="hbar mir" data-${attr}="${esc(x.key)}" aria-pressed="${pressed === x.key}">
+      <span class="name">${esc(x.label)} <span class="muted">· ${x.s} секц.</span></span>
+      <span class="track"><span class="fill" style="width:${(x.n / max) * 100}%;display:block"></span></span>
+      <span class="num">${nf.format(x.n)}</span>
+    </button>`).join("") || `<div class="muted">Още няма сигнали.</div>`;
+  };
+
+  if (!state.mir) {
+    $("mirTitle").textContent = "Сигнали по МИР";
+    $("mirHint").textContent = "Натиснете МИР, за да видите сигналите по общини.";
+    $("mirBack").hidden = true;
+    $("mirs").innerHTML = bars([...by].map(([k, e]) => ({ key: k, label: `${k} ${title(e.name)}`, n: e.n, s: e.s })).sort((a, b) => b.n - a.n), "mir", "");
+    return;
+  }
+  const sub = new Map();
+  for (const r of data.rows) {
+    if (r.place[0] !== state.mir) continue;
+    const k = area(r.place);
+    const e = sub.get(k) ?? { key: k, label: k, n: 0, s: 0 };
+    e.n += r.n; e.s++; sub.set(k, e);
+  }
+  const rayons = [...sub.keys()].some((k) => k.startsWith("р-н"));
+  $("mirTitle").textContent = `МИР ${state.mir} ${title(by.get(state.mir)?.name ?? "")}`;
+  $("mirHint").textContent = `Сигнали по ${rayons ? "райони и общини" : "общини"}. Натиснете, за да филтрирате секциите.`;
+  $("mirBack").hidden = false;
+  $("mirs").innerHTML = bars([...sub.values()].sort((a, b) => b.n - a.n), "area", state.area);
+}
+
+function sofiaTime(dayUtc, hour) {
+  for (const off of [2, 3]) {
+    const t = dayUtc + (hour - off) * 3600e3;
+    if (+hm.format(t).slice(0, 2) === hour) return t;
+  }
+  return dayUtc + (hour - 2) * 3600e3;
+}
+
+function renderTimeline() {
+  const el = $("timeline");
+  const ts = data.rows.flatMap((r) => r.reports.map((x) => Date.parse(x[0])));
+  const step = 15 * 60e3;
+  // Election night: 19:00 on election day to 08:00 the next morning, Bulgarian time.
+  // From 19:00 on election day to 30 minutes after the latest report (at least two hours).
+  const [dd, mm, yy] = (data.form.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/) ?? []).slice(1).map(Number);
+  const day = dd ? Date.UTC(yy, mm - 1, dd) : Date.parse(data.updated);
+  const start = sofiaTime(day, 19);
+  const latest = ts.length ? Math.max(...ts) : 0;
+  const end = Math.max(start + 2 * 3600e3, Math.ceil((latest + 30 * 60e3) / step) * step);
+  const n = Math.round((end - start) / step);
+  const counts = new Array(n).fill(0);
+  let outside = 0;
+  for (const t of ts) (t >= start && t < end) ? counts[Math.floor((t - start) / step)]++ : outside++;
+  $("timelineNote").textContent = outside ? ` ${nf.format(outside)} сигнала преди 19:00 не са показани.` : "";
+  const W = Math.max(240, el.clientWidth || 600), H = Math.max(140, el.clientHeight || 170), L = 30, B = 22, T = 6;
+  const max = Math.max(...counts);
+  const unit = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000].find((u) => u * 4 >= max) ?? 2000;
+  const nice = unit * 4;
+  const bw = (W - L) / n, gap = bw > 4 ? 2 : 0;
+  const y = (v) => T + (H - B - T) * (1 - v / nice);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Сигнали на всеки 15 минути">`;
+  for (const v of [0, unit, unit * 2, unit * 3, nice]) s += `<line class="gridline" x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  // a label on whole hours, no closer than ~55px apart
+  const every = 4 * Math.max(1, Math.ceil(55 / (bw * 4)));
+  counts.forEach((c, i) => {
+    const x = L + i * bw, t0 = start + i * step;
+    s += `<g data-i="${i}"><rect class="hit" x="${x}" y="${T}" width="${bw}" height="${H - B - T}"/>`;
+    if (c) s += `<rect class="col" x="${x + gap / 2}" y="${y(c)}" width="${Math.max(1, bw - gap)}" height="${H - B - y(c)}" rx="${Math.min(3, bw / 3)}"/>`;
+    s += `</g>`;
+    if (i % every === 0) s += `<text class="axis" x="${x}" y="${H - 6}">${hm.format(t0)}</text>`;
+  });
+  el.innerHTML = s + `</svg>`;
+  el.querySelectorAll("g[data-i]").forEach((g) => {
+    const i = +g.dataset.i, t0 = start + i * step;
+    g.addEventListener("mousemove", (e) => showTip(e, `${hm.format(t0)}–${hm.format(t0 + step)}<br><b>${counts[i]}</b> сигнала`));
+    g.addEventListener("mouseleave", hideTip);
+  });
+}
+
+// ---------- table ----------
+function filtered() {
+  const q = state.q.trim().toLowerCase();
+  const t = state.type === "" ? null : +state.type;
+  let rows = data.rows.filter((r) =>
+    (t === null || r.types[t] > 0) &&
+    (!state.mir || r.place[0] === state.mir) &&
+    (!state.area || area(r.place) === state.area) &&
+    (!q || r.id.includes(q.replace(/\s/g, "")) || r.place.slice(1, 7).join(" ").toLowerCase().includes(q)));
+  const k = state.sort;
+  const n = (r) => (t === null ? r.n : r.types[t]);
+  rows = rows.slice().sort((a, b) =>
+    k === "last" ? (a.last < b.last ? 1 : -1) :
+    k === "n" ? n(b) - n(a) || b.people - a.people :
+    b.people - a.people || n(b) - n(a));
+  return rows;
+}
+
+function placeHtml(p) {
+  const [, , obl, obsh, ray, st, addr] = p;
+  if (!obsh) return `<div class="place">Чужбина</div>`;
+  const where = [settlement(st), ray ? `р-н ${title(ray)}` : "", obsh && settlement(st).toUpperCase().indexOf(obsh) < 0 ? `общ. ${title(obsh)}` : ""].filter(Boolean).join(", ");
+  return `<div class="place">${esc(where)}</div><div class="addr">${esc(addr)}</div>`;
+}
+
+function typesHtml(r) {
+  return `<div class="chips">` + r.types.map((c, i) => [i, c]).filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1])
+    .map(([i, c]) => `<span class="chip">${esc(cleanType(data.options[i]))} <b>${c}</b></span>`).join("") + `</div>`;
+}
+
+function detailHtml(r) {
+  const p = r.place;
+  const reports = r.reports.slice().reverse().map(([at, told, types]) => `<li><span class="t">${dayHm.format(new Date(at))}</span>${told ? ` <span class="muted">(нередност в ${esc(told)})</span>` : ""} – ${types.map((i) => esc(cleanType(data.options[i]))).join(", ") || "<span class='muted'>без посочен вид</span>"}</li>`).join("");
+  return `<div class="meta">
+      <span>МИР ${esc(p[0])} ${esc(title(p[1]))}</span>
+      ${p[2] ? `<span>обл. ${esc(title(p[2]))}</span>` : ""}
+      ${p[7] != null ? `<span>${nf.format(p[7])} избиратели в списъка</span>` : ""}
+      <a href="${evideoUrl(p[0])}" target="_blank" rel="noopener">Гледай излъчването на evideo.bg ↗</a>
+    </div><ol reversed>${reports}</ol>`;
+}
+
+function renderRows() {
+  $("areaChip").hidden = !state.area;
+  $("areaChip").textContent = state.area;
+  const rows = filtered();
+  const t = state.type === "" ? null : +state.type;
+  const nOf = (r) => (t === null ? r.n : r.types[t]);
+  const max = Math.max(1, ...rows.map(nOf));
+  const page = rows.slice(0, shown);
+  $("rows").innerHTML = page.map((r, i) => {
+    const row = `<tr class="row" data-id="${r.id}" tabindex="0" aria-expanded="${open.has(r.id)}">
+      <td class="c-rank muted">${i + 1}</td>
+      <td class="c-sid"><span class="sid">${r.id}</span></td>
+      <td class="c-place">${placeHtml(r.place)}</td>
+      <td class="num c-n"><div class="mini"><span class="track"><span class="fill" style="width:${(nOf(r) / max) * 100}%;display:block"></span></span>${nOf(r)}</div></td>
+      <td class="num c-people">${r.people}</td>
+      <td class="c-types">${typesHtml(r)}</td>
+      <td class="num c-last">${hm.format(new Date(r.last))}</td></tr>`;
+    return row + (open.has(r.id) ? `<tr class="detail"><td colspan="7">${detailHtml(r)}</td></tr>` : "");
+  }).join("") || `<tr><td colspan="7" class="empty">${data.rows.length ? "Няма секции, които отговарят на търсенето." : "Още няма подадени сигнали."}</td></tr>`;
+  $("moreBtn").hidden = rows.length <= shown;
+  $("moreBtn").textContent = `Покажи още (${nf.format(rows.length - shown)})`;
+}
+
+function renderAll() {
+  $("formName").textContent = "Избори " + ((data.form || "").match(/\d{1,2}\.\d{1,2}\.\d{4}/)?.[0] ?? "");
+  $("kTotal").textContent = nf.format(data.total);
+  $("kSections").textContent = nf.format(data.sections);
+  $("kPeople").textContent = nf.format(data.reporters);
+  $("kLast").textContent = data.last ? hm.format(new Date(data.last)) + " ч." : "–";
+  const sel = $("fType"), cur = state.type;
+  sel.innerHTML = `<option value="">Всички видове</option>` + data.options.map((o, i) => `<option value="${i}">${esc(cleanType(o))}</option>`).join("");
+  sel.value = cur;
+  renderTypes(); renderMirs(); renderTimeline(); renderRows();
+  const u = data.unknown.reduce((s, x) => s + x.n, 0);
+  $("unknownBox").hidden = !u;
+  $("unknownTitle").textContent = `${nf.format(u)} сигнала с непознат номер на секция`;
+  $("unknown").innerHTML = data.unknown.map((x) => `<span class="chip"><span class="sid">${esc(x.raw)}</span> <b>${x.n}</b></span>`).join("");
+}
+
+// ---------- data ----------
+let lastOk = 0;
+async function load() {
+  try {
+    const r = await fetch(`${DATA_URL}?v=${Math.floor(Date.now() / 60e3)}`, { cache: "no-cache" });
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    data = d; lastOk = Date.now();
+    renderAll();
+  } catch (e) {
+    if (!data) $("rows").innerHTML = `<tr><td colspan="7" class="empty">Данните не можаха да се заредят. Ще опитаме отново след минута.</td></tr>`;
+  }
+  status();
+}
+function status() {
+  const fresh = Date.now() - lastOk < 3 * REFRESH_MS;
+  $("dot").classList.toggle("stale", !fresh);
+  $("status").textContent = !lastOk ? "Няма връзка с данните" :
+    `Обновява се всяка минута · заредено в ${hm.format(new Date(lastOk))}` + (fresh ? "" : " · няма връзка");
+}
+setInterval(() => { if (!document.hidden) load(); else status(); }, REFRESH_MS);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastOk > REFRESH_MS) load(); });
+
+// ---------- controls ----------
+const rerender = () => { shown = PAGE; renderTypes(); renderMirs(); renderRows(); };
+$("q").addEventListener("input", (e) => { state.q = e.target.value; shown = PAGE; renderRows(); });
+$("fType").addEventListener("change", (e) => { state.type = e.target.value; rerender(); });
+$("fMir").addEventListener("change", (e) => { state.mir = e.target.value; state.area = ""; rerender(); });
+$("areaChip").addEventListener("click", () => { state.area = ""; rerender(); });
+let resizeT;
+addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => data && renderTimeline(), 150); });
+$("mirBack").addEventListener("click", () => { state.mir = ""; state.area = ""; rerender(); });
+$("sort").addEventListener("change", (e) => { state.sort = e.target.value; shown = PAGE; renderRows(); });
+$("moreBtn").addEventListener("click", () => { shown += PAGE; renderRows(); });
+$("types").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-type]"); if (!b) return;
+  state.type = state.type === b.dataset.type ? "" : b.dataset.type; $("fType").value = state.type; rerender();
+});
+$("mirs").addEventListener("click", (e) => {
+  const m = e.target.closest("[data-mir]"), a = e.target.closest("[data-area]");
+  if (m) { state.mir = m.dataset.mir; state.area = ""; }
+  else if (a) state.area = state.area === a.dataset.area ? "" : a.dataset.area;
+  else return;
+  rerender();
+});
+function toggle(tr) {
+  const id = tr.dataset.id;
+  open.has(id) ? open.delete(id) : open.add(id);
+  renderRows();
+}
+$("rows").addEventListener("click", (e) => { if (e.target.closest("a")) return; const tr = e.target.closest("tr.row"); if (tr) toggle(tr); });
+$("rows").addEventListener("keydown", (e) => { const tr = e.target.closest("tr.row"); if (tr && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggle(tr); } });
+
+load();
+</script>
+</body>
+</html>
