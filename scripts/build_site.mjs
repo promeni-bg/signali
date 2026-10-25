@@ -51,6 +51,8 @@ if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `summar
 const stats = {};
 const live = aggregate(t.form, t.questions, t.submissions, sections, now, stats, sum.map);
 live.ai = sum.on;
+// the page warns about old data only while the minute-by-minute rebuilds run
+live.live = process.env.LIVE === "true";
 // counts only: a type answer the form's options don't know is a volunteer's own "other" text
 console.log(`видове: ${stats.typesMatched} разпознати, ${stats.typesOther} като „Друго“`);
 writePage("", live, { label: "Избори 25 октомври 2026", evideo: process.env.EVIDEO_ELECTION });

@@ -95,8 +95,9 @@ while the repository variable `LIVE` is `true`:
    `LIVE` to `true`. Then go to Actions → Deploy → Run workflow, once.
    - Each run starts the next one when it finishes.
    - The 5-minute schedule restarts the loop if it ever breaks.
-2. **Switch off:** set `LIVE` to `false` after the count. The last snapshot
-   stays published.
+2. **Switch off:** set `LIVE` to `false` after the count, then Actions → Deploy
+   → Run workflow once more. That last snapshot stays published, and no longer
+   counts as live: the page stops warning that its data is old.
 3. **AI summaries:** they run when the secret `ANTHROPIC_API_KEY` is set. To
    switch them off, and hide the ones already published, set the variable
    `SUMMARIES` to `false`; the next run publishes without them.
@@ -111,7 +112,8 @@ while the repository variable `LIVE` is `true`:
 A push to `main` always deploys once.
 
 **What the page shows when something fails:** it gives the time of its data
-("Данни към 21:05 ч."). If the build stops working (Tally down, a bad key),
+("Данни към 21:05 ч."). Only while `LIVE` is on does old data count as a failure;
+before and after the count the page just gives the time. If the build stops working (Tally down, a bad key),
 the data stops changing, and after 10 minutes the page says how long ago it was
 updated, with a grey dot. (Ten minutes, not five: a run that works off a
 backlog of summaries takes about three.) If the page can't reach its data, it says so and

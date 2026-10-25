@@ -65,6 +65,7 @@ jobs:
           # summaries need the key; SUMMARIES=false turns them off and hides them
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUMMARIES: ${{ vars.SUMMARIES }}
+          LIVE: ${{ vars.LIVE }}   # the page warns about old data only while LIVE
       - name: Save the summaries
         if: always() && steps.build.outputs.summaries_changed == 'true'
         uses: actions/cache/save@v4

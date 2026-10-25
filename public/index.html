@@ -746,15 +746,19 @@ async function load() {
 }
 // Two separate failures: the page can't reach the data (no connection), or it can
 // but the data stopped changing (the build behind it fails, e.g. Tally is down).
+// Only while the minute-by-minute rebuilds run (data.live: the LIVE variable)
+// is old data a failure; before and after the count it is just the latest.
 function status() {
   const reach = Date.now() - lastOk < 3 * REFRESH_MS;
+  const live = !IS_TEST && data?.live === true;
   const age = dataAt ? Date.now() - dataAt : 0;
-  const stale = !IS_TEST && age > STALE_MS;
-  $("dot").classList.toggle("stale", IS_TEST || !reach || stale);
+  const stale = live && age > STALE_MS;
+  $("dot").classList.toggle("stale", !live || !reach || stale);
   const at = dataAt ? hm.format(new Date(dataAt)) : "";
   $("status").textContent =
     !lastOk ? "Няма връзка с данните. Ще опитаме отново след минута." :
     IS_TEST ? "Тестови данни от предишни избори · не се обновяват" :
+    !live ? (dataAt ? `Данни към ${dayHm.format(new Date(dataAt))} ч.` : "Данни") + (reach ? "" : " · няма връзка") :
     stale ? `Данните не са обновявани от ${Math.floor(age / 60e3)} мин. (последни към ${at} ч.)` + (reach ? "" : " · няма връзка") :
     `Данни към ${at} ч. · обновяват се всяка минута` + (reach ? "" : " · няма връзка");
 }
