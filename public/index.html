@@ -235,8 +235,6 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
   #secHead .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #secHead .controls input, #secHead .controls .chipx { grid-column: 1 / -1; }
   #secHead .controls select { width: auto; }
-  #secHead.stuck h2, #secHead.stuck .hint { display: none; }
-  #secHead.stuck { padding-top: 10px; }
   .titles { display: block; }
   .titles .note { margin: 10px 0 0; }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 14px; }
@@ -310,7 +308,6 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
   <section class="panel" id="secPanel">
     <div class="sticky" id="secHead">
     <h2>Секции</h2>
-    <p class="hint">Подредени по броя на различните доброволци, подали сигнал. Натиснете секция за адреса и отделните сигнали.</p>
     <div class="controls">
       <input id="q" type="search" placeholder="Търсене: номер на секция, населено място, адрес" aria-label="Търсене">
       <select id="fType" aria-label="Вид нередност"><option value="">Всички видове</option></select>
@@ -325,6 +322,7 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
     </div>
     <p class="fcount" id="fCount" hidden><span id="fCountN"></span><button class="link" data-clear="all">✕ Изчисти филтрите</button></p>
     </div>
+    <p class="hint" id="secHint">Подредени по броя на различните доброволци, подали сигнал. Натиснете секция за адреса и отделните сигнали.</p>
     <table>
       <thead><tr>
         <th>#</th><th>Секция</th><th>Място</th><th class="num">Сигнали</th><th class="num">Доброволци</th><th>Видове</th><th class="c-sum">Последен сигнал <span class="ai" tabindex="0" role="img" aria-label="Обобщения от изкуствен интелект" data-tip="ai"></span></th>
@@ -673,10 +671,12 @@ function renderAll() {
 
 // ---------- ticker: a summary from a random section every few seconds ----------
 const TICK_MS = 7000;
-const tk = { el: null, pool: [], hist: [], pos: -1, paused: false, hover: false, since: 0, paintT: 0 };
+const tk = { el: null, pool: [], hist: [], pos: -1, paused: false, hover: false, since: 0, paintT: 0, away: false };
 // held: paused by the button, a mouse over the card, or keyboard focus in it. A click
 // or a tap is no reason to stop (a clicked button keeps focus; a tap "hovers").
-const held = () => tk.paused || tk.hover || !!tk.el.querySelector(":focus-visible");
+// Also while the card is scrolled out of sight: a new summary changes its height and
+// would shift the page under a reader further down (Safari doesn't compensate).
+const held = () => tk.paused || tk.hover || tk.away || !!tk.el.querySelector(":focus-visible");
 function shortPlace(p) {
   if (!p[3]) return "Чужбина";
   return [p[5] ? settlement(p[5]) : `общ. ${title(p[3])}`, p[4] ? `р-н ${title(p[4])}` : ""].filter(Boolean).join(", ");
@@ -862,6 +862,9 @@ const headH = () => document.documentElement.style.setProperty("--head-h", secHe
 new ResizeObserver(headH).observe(secHead); headH();
 addEventListener("scroll", () => {
   secHead.classList.toggle("stuck", secHead.getBoundingClientRect().top <= 0 && $("secPanel").getBoundingClientRect().top < 0);
+  // the ticker waits while scrolled out of sight (see held), and starts a fresh count when back
+  const away = tk.el ? tk.el.getBoundingClientRect().bottom < 0 : false;
+  if (away !== tk.away) { tk.away = away; tk.since = Date.now(); progress(); }
   $("toTop").classList.toggle("show", scrollY > 700);
 }, { passive: true });
 $("toTop").addEventListener("click", () => scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }));
