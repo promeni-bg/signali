@@ -204,6 +204,17 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
 .kpi .v { font-size: clamp(26px, 2.8vw, 34px); font-weight: 700; }
 .top .panel:first-child { background: var(--bar-tint); border-color: transparent; }
 .top .panel:first-child .hbar .track { height: 14px; }
+/* a panel whose choice filters the sections: blue frame, the chosen bar outlined,
+   the others greyed, and a footer that says so (padding keeps the content still) */
+.top .panel.filtering { border: 2px solid var(--bar); padding: 15px; }
+.panel.filtering h2::after { content: "Филтър"; margin-left: 8px; vertical-align: 2px; font-size: 11.5px; font-weight: 600; color: var(--bar); background: var(--bar-soft); border-radius: 10px; padding: 2px 8px; }
+.hbar[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--bar); font-weight: 600; }
+.hbars:has(.hbar[aria-pressed="true"]) .hbar[aria-pressed="false"] { opacity: .45; }
+.hbars:has(.hbar[aria-pressed="true"]) .hbar[aria-pressed="false"] .fill { background: var(--text-3); }
+.pfoot { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 13px; color: var(--bar); }
+/* an active filter in the sections' controls, and the count under them */
+.controls .on, .controls .chipx { border-color: var(--bar); box-shadow: inset 0 0 0 1px var(--bar); background: var(--bar-soft); }
+.fcount { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: -4px 0 8px; font-size: 13px; color: var(--text-2); }
 
 /* the numbers and the AI card no longer fit beside the title: the title and the note
    share the first row, the numbers and the card take the full width under them */
@@ -277,20 +288,22 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
   </header>
 
   <div class="top">
-    <section class="panel">
+    <section class="panel" id="typePanel">
       <h2>Сигнали по вид нередност</h2>
       <p class="hint">Един сигнал може да посочи няколко вида. Натиснете вид сигнал, за да филтрирате секциите.</p>
       <div class="body"><div class="hbars" id="types"></div></div>
+      <div class="pfoot" hidden><span>↓ Секциите са филтрирани</span><button class="link" data-clear="type">✕ Махни</button></div>
     </section>
     <section class="panel">
       <h2>Сигнали във времето</h2>
       <p class="hint">Брой подадени сигнали на всеки 15 минути, българско време.<span id="timelineNote"></span></p>
       <div class="body chart" id="timeline"></div>
     </section>
-    <section class="panel">
+    <section class="panel" id="mirPanel">
       <div class="phead"><h2 id="mirTitle">Сигнали по МИР</h2><button class="link" id="mirBack" hidden>← Всички МИР</button></div>
       <p class="hint" id="mirHint">Натиснете МИР, за да видите сигналите по общини.</p>
       <div class="body"><div class="hbars" id="mirs"></div></div>
+      <div class="pfoot" hidden><span>↓ Секциите са филтрирани</span><button class="link" data-clear="mir">✕ Махни</button></div>
     </section>
   </div>
 
@@ -310,6 +323,7 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
         <option value="sev">Най-сериозни сигнали</option>
       </select>
     </div>
+    <p class="fcount" id="fCount" hidden><span id="fCountN"></span><button class="link" data-clear="all">✕ Изчисти филтрите</button></p>
     </div>
     <table>
       <thead><tr>
@@ -445,7 +459,14 @@ function capped(key, items, pressed) {
     `<button class="btn hmore" data-more="${esc(key)}" aria-expanded="${open}">${open ? "Покажи по-малко" : `Покажи още (${items.length - LIST_MAX})`}</button>`;
 }
 
+// a top panel that is filtering the sections shows it (see .filtering)
+function markPanel(id, on) {
+  $(id).classList.toggle("filtering", on);
+  $(id).querySelector(".pfoot").hidden = !on;
+}
+
 function renderTypes() {
+  markPanel("typePanel", state.type !== "");
   const order = data.options.map((o, i) => [i, data.byType[i]]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...order.map(([, n]) => n));
   $("types").innerHTML = capped("types", order.map(([i, n]) => `
@@ -468,6 +489,7 @@ const MIR_SHORT = {
 const mirName = (code, name) => MIR_SHORT[code] ?? `${code} ${title(name)}`;
 
 function renderMirs() {
+  markPanel("mirPanel", !!state.mir);
   const by = new Map();
   for (const r of data.rows) {
     const k = r.place[0];
@@ -609,6 +631,11 @@ function renderRows() {
   $("areaChip").hidden = !state.area;
   $("areaChip").textContent = state.area;
   const rows = filtered();
+  $("q").classList.toggle("on", !!state.q.trim());
+  $("fType").classList.toggle("on", state.type !== "");
+  $("fMir").classList.toggle("on", !!state.mir);
+  $("fCount").hidden = !(state.q.trim() || state.type !== "" || state.mir);
+  $("fCountN").textContent = `Показани ${nf.format(rows.length)} от ${nf.format(data.rows.length)} ${data.rows.length === 1 ? "секция" : "секции"}`;
   const t = state.type === "" ? null : +state.type;
   const nOf = (r) => (t === null ? r.n : r.types[t]);
   const page = rows.slice(0, shown);
@@ -785,6 +812,14 @@ $("q").addEventListener("input", (e) => { state.q = e.target.value; shown = PAGE
 $("fType").addEventListener("change", (e) => { state.type = e.target.value; rerender(); });
 $("fMir").addEventListener("change", (e) => { state.mir = e.target.value; state.area = ""; rerender(); });
 $("areaChip").addEventListener("click", () => { state.area = ""; rerender(); });
+// ✕ in a panel's footer or under the controls: clear that filter, or all of them
+document.addEventListener("click", (e) => {
+  const c = e.target.closest("[data-clear]")?.dataset.clear; if (!c) return;
+  if (c === "type" || c === "all") { state.type = ""; $("fType").value = ""; }
+  if (c === "mir" || c === "all") { state.mir = ""; state.area = ""; $("fMir").value = ""; }
+  if (c === "all") { state.q = ""; $("q").value = ""; }
+  rerender();
+});
 let resizeT;
 addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => data && renderTimeline(), 150); });
 $("mirBack").addEventListener("click", () => { state.mir = ""; state.area = ""; rerender(); });
