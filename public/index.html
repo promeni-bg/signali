@@ -128,6 +128,7 @@ tr.detail td { background: var(--bg); padding: 12px 14px 14px; }
 .detail .t { font-variant-numeric: tabular-nums; font-weight: 600; }
 .btn { display: inline-block; font: inherit; font-size: 14px; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; text-decoration: none; }
 .btn:hover { background: var(--chip); }
+[hidden] { display: none !important; } /* a class's display must not undo the hidden attribute */
 a { color: var(--bar); }
 .more { text-align: center; margin-top: 12px; }
 .muted { color: var(--text-3); }
