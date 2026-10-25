@@ -77,10 +77,12 @@ header .sub { color: var(--text-2); margin: 0; }
 .kpi { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(16,24,40,.05); border-radius: 10px; padding: 10px 14px; }
 .kpi .v { font-size: clamp(22px, 2.4vw, 28px); font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.1; }
 .kpi .l { color: var(--text-2); font-size: 12.5px; line-height: 1.3; margin-top: 2px; }
-.top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.top .panel { display: flex; flex-direction: column; height: 330px; }
-.top .body { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; margin: 0 -6px; }
-.top .chart { overflow: hidden; }
+.top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.top .panel { display: flex; flex-direction: column; min-height: 330px; }
+.top .body { margin: 0 -6px; }
+/* a fixed height: the panel grows when a list beside it opens, the chart doesn't */
+.top .chart { overflow: hidden; height: 223px; }
+.hmore { justify-self: center; margin-top: 6px; font-size: 13px; padding: 6px 12px; }
 .phead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .link { font: inherit; font-size: 13px; color: var(--bar); background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
 .chipx { font: inherit; font-size: 13.5px; color: var(--text); background: var(--bar-soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
@@ -228,9 +230,8 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
   .titles .note { margin: 10px 0 0; }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 14px; }
   .top { grid-template-columns: minmax(0, 1fr); }
-  .top .panel { height: auto; }
-  .top .chart { height: 190px; flex: none; }
-  .top .panel:last-child .body { max-height: 420px; }
+  .top .panel { min-height: 0; }
+  .top .chart { height: 190px; }
 }
 /* the table stacks into cards below 900px: its columns don't fit a narrower screen */
 @media (max-width: 900px) {
@@ -432,15 +433,27 @@ document.addEventListener("click", (e) => {
 addEventListener("scroll", () => pinned && hideTip(), { passive: true });
 
 // ---------- charts ----------
+// A list's first LIST_MAX bars; the rest behind a button. A pressed bar further
+// down keeps the list open, so the filter in use stays in sight.
+const LIST_MAX = 5;
+const listOpen = new Set();
+function capped(key, items, pressed) {
+  if (items.length <= LIST_MAX) return items.join("");
+  if (pressed >= LIST_MAX) return items.join("");
+  const open = listOpen.has(key);
+  return (open ? items : items.slice(0, LIST_MAX)).join("") +
+    `<button class="btn hmore" data-more="${esc(key)}" aria-expanded="${open}">${open ? "Покажи по-малко" : `Покажи още (${items.length - LIST_MAX})`}</button>`;
+}
+
 function renderTypes() {
   const order = data.options.map((o, i) => [i, data.byType[i]]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...order.map(([, n]) => n));
-  $("types").innerHTML = order.map(([i, n]) => `
+  $("types").innerHTML = capped("types", order.map(([i, n]) => `
     <button class="hbar" data-type="${i}" aria-pressed="${state.type === String(i)}" title="${esc(typeLabel(i).long)}">
       <span class="name">${typeLabel(i).emoji} ${esc(typeLabel(i).long)}</span>
       <span class="track"><span class="fill" style="width:${(n / max) * 100}%;display:block"></span></span>
       <span class="num">${nf.format(n)}</span>
-    </button>`).join("") || `<div class="muted">Още няма сигнали.</div>`;
+    </button>`), order.findIndex(([i]) => state.type === String(i))) || `<div class="muted">Още няма сигнали.</div>`;
 }
 
 // Short МИР names; the number only where a name repeats (София 23, 24, 25).
@@ -468,12 +481,12 @@ function renderMirs() {
 
   const bars = (list, attr, pressed) => {
     const max = Math.max(1, ...list.map((x) => x.n));
-    return list.map((x) => `
+    return capped(`${attr}:${state.mir}`, list.map((x) => `
     <button class="hbar mir" data-${attr}="${esc(x.key)}" aria-pressed="${pressed === x.key}">
       <span class="name">${esc(x.label)}</span>
       <span class="track"><span class="fill" style="width:${(x.n / max) * 100}%;display:block"></span></span>
       <span class="num">${nf.format(x.n)}</span>
-    </button>`).join("") || `<div class="muted">Още няма сигнали.</div>`;
+    </button>`), list.findIndex((x) => x.key === pressed)) || `<div class="muted">Още няма сигнали.</div>`;
   };
 
   if (!state.mir) {
@@ -777,6 +790,14 @@ addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout((
 $("mirBack").addEventListener("click", () => { state.mir = ""; state.area = ""; rerender(); });
 $("sort").addEventListener("change", (e) => { state.sort = e.target.value; shown = PAGE; renderRows(); });
 $("moreBtn").addEventListener("click", () => { shown += PAGE; renderRows(); });
+// show more / fewer bars: redraw just that list, the focus back on its button
+for (const [id, draw] of [["types", renderTypes], ["mirs", renderMirs]]) $(id).addEventListener("click", (e) => {
+  const b = e.target.closest("[data-more]"); if (!b) return;
+  const k = b.dataset.more;
+  listOpen.has(k) ? listOpen.delete(k) : listOpen.add(k);
+  draw();
+  $(id).querySelector("[data-more]")?.focus({ preventScroll: true });
+});
 $("types").addEventListener("click", (e) => {
   const b = e.target.closest("[data-type]"); if (!b) return;
   state.type = state.type === b.dataset.type ? "" : b.dataset.type; $("fType").value = state.type; rerender();
