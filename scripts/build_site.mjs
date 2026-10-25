@@ -8,7 +8,7 @@
 //   carry over between builds in SUMMARIES_STORE (default .cache/summaries.json).
 //   node scripts/build_site.mjs _site
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync, copyFileSync, readdirSync } from "node:fs";
-import { aggregate, fetchTally } from "../src/aggregate.js";
+import { aggregate, fetchTally, questionIds } from "../src/aggregate.js";
 import { liveSummaries } from "../src/live-summaries.js";
 
 const out = process.argv[2] ?? "_site";
@@ -40,6 +40,10 @@ mkdirSync(out, { recursive: true });
 const key = process.env.TALLY_API_KEY, form = process.env.TALLY_FORM_ID;
 if (!key || !form) throw new Error("TALLY_API_KEY and TALLY_FORM_ID are required");
 const t = await fetchTally(form, key);
+// which of the form's fields the build reads, by position and type only
+const q = questionIds(t.questions);
+const pos = (id) => { const i = t.questions.findIndex((x) => x.id === id); return i < 0 ? "—" : `${i + 1} ${t.questions[i].type}`; };
+console.log(`полета (от ${t.questions.length}): доброволец ${pos(q.who)}, секция ${pos(q.section)}, час ${pos(q.time)}, видове ${pos(q.types)}, подробности ${pos(q.details)}`);
 const now = new Date();
 const placed = {};
 aggregate(t.form, t.questions, t.submissions, sections, now, placed);

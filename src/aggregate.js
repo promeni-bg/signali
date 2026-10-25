@@ -1,5 +1,5 @@
 // Tally submissions -> the public snapshot. Everything personal stops here: the
-// reporter's email is used only to count distinct reporters and never leaves this
+// reporter's email or username is used only to count distinct reporters and never leaves this
 // function; free-text details and screenshots are not read at all, and a section
 // number that matches no section is only counted, never published (it may be a
 // phone number or an ЕГН typed into the wrong field).
@@ -13,10 +13,12 @@ export function questionIds(questions) {
     else if (x.type === "MULTIPLE_CHOICE" || x.type === "CHECKBOXES") q.types ??= x.id;
     else if (x.type === "INPUT_EMAIL" && !q.email) q.email = x.id;
     else if (x.type === "TEXTAREA" && !q.textarea) q.textarea = x.id;
-    else if (x.type === "INPUT_TEXT" && !q.text) q.text = x.id;
+    else if (x.type === "INPUT_TEXT") (q.texts ??= []).push(x.id);
   }
-  // the details: the long-text field ("Подробности"); a short-text one only if there is none
-  q.details = q.textarea ?? q.text;
+  // the details: the long-text field ("Подробности"); the last short-text one only if there is none
+  q.details = q.textarea ?? q.texts?.at(-1);
+  // the volunteer: the email; this year's form asks for a username (a short text) instead
+  q.who = q.email ?? q.texts?.find((id) => id !== q.details);
   return q;
 }
 
@@ -75,7 +77,7 @@ export function aggregate(form, questions, submissions, sections, now = new Date
     for (const r of s.responses) ans[r.questionId] = r.answer;
     const sec = sectionId(ans[q.section]);
     if (!sec) continue;
-    const email = typeof ans[q.email] === "string" ? ans[q.email].trim().toLowerCase() : "";
+    const email = typeof ans[q.who] === "string" ? ans[q.who].trim().toLowerCase() : "";
     if (email) reporters.add(email);
 
     let raw = ans[q.types];
