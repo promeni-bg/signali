@@ -19,7 +19,7 @@ GitHub Pages:
 3. Reduce them to the public snapshot (`src/aggregate.js`).
 4. Write each dashboard as a static page plus `api/data.json`.
 
-The site root is the live dashboard; `/dashboard/` redirects to it. The
+The site root is the live dashboard; `/dashboard/` redirects to it. `/poveritelnost/` is the privacy notice the Tally form links to (`public/privacy.html`). The
 preview image for social media (`public/og.png`) and the touch icon are drawn
 by `scripts/make_og.py`.
 

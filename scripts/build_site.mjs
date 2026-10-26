@@ -2,6 +2,7 @@
 //   /                           live: the Tally form TALLY_FORM_ID, read now with TALLY_API_KEY
 //   dashboard-19-april-2026/    test: the frozen snapshot staging/19-april-2026.json, not indexed
 //   dashboard/                  redirect to /, the first address we announced
+//   poveritelnost/              privacy notice for the volunteers' form (public/privacy.html)
 // EVIDEO_ELECTION (optional): evideo.bg's folder for this election, e.g. "pe202610".
 // ANTHROPIC_API_KEY (optional): AI summaries of the reports' details on the live page;
 //   SUMMARIES=false turns them off (and hides the ones already made). The summaries
@@ -65,6 +66,9 @@ mkdirSync(`${out}/dashboard`, { recursive: true });
 writeFileSync(`${out}/dashboard/index.html`, `<!doctype html><meta charset="utf-8"><title>Сигнали от видеонаблюдение</title>
 <meta http-equiv="refresh" content="0; url=/"><link rel="canonical" href="${SITE}"><a href="/">Сигнали от видеонаблюдение</a>
 `);
+// the privacy notice the Tally form links to
+mkdirSync(`${out}/poveritelnost`, { recursive: true });
+copyFileSync(new URL("public/privacy.html", root), `${out}/poveritelnost/index.html`);
 // the preview image and icons
 for (const f of readdirSync(new URL("public", root))) if (f.endsWith(".png")) copyFileSync(new URL(`public/${f}`, root), `${out}/${f}`);
 writeFileSync(`${out}/.nojekyll`, "");
