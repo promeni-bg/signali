@@ -344,8 +344,8 @@ thead th { position: sticky; top: var(--head-h, 0px); z-index: 4; background: va
 <script>
 // evideo.bg folder of this election, e.g. "pe202604"; empty links to the home page.
 const EVIDEO_ELECTION = "";
-// true on the frozen test copy: its data is old on purpose
-const IS_TEST = false;
+// the status line of a frozen copy (the test page, an archived election): its data is old on purpose
+const FROZEN = "";
 const DATA_URL = "api/data.json";
 const REFRESH_MS = 60_000;
 const PAGE = 20;
@@ -356,7 +356,8 @@ const nf = new Intl.NumberFormat("bg-BG");
 const signals = (n) => `${nf.format(n)} ${n === 1 ? "сигнал" : "сигнала"}`;
 const hm = new Intl.DateTimeFormat("bg-BG", { timeZone: "Europe/Sofia", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 const dayHm = new Intl.DateTimeFormat("bg-BG", { timeZone: "Europe/Sofia", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
-const cleanType = (t) => t.replace(/^[^\p{L}\p{N}]+/u, "").trim();   // the form's option emojis
+// the form's option emojis, and its pointers to the volunteers' instructions ("(виж Инстр.)")
+const cleanType = (t) => t.replace(/^[^\p{L}\p{N}]+/u, "").replace(/\s*\(виж Инстр\.?\)/u, "").trim();
 const title = (s) => s ? s.charAt(0) + s.slice(1).toLowerCase() : s;
 const settlement = (s) => (s || "").replace(/^(ГР|С)\.\s*/i, (m) => m.toLowerCase());
 
@@ -369,10 +370,14 @@ const TYPE_SHORT = {
   "Неправилно поставена или препречена камера": ["📷", "Камера"],
   "Не е започнало излъчването": ["⛔", "Без излъчване"],
   "Излъчването спря неочаквано": ["⏹️", "Спряло излъчване"],
+  "Излъчването спря, замръзна или се повтаря": ["⏹️", "Спряло излъчване"],
+  "Броенето/протоколът се прави извън обхвата на камерата": ["👁️", "Извън кадър"],
   "Не се чува звук от видеото": ["🔇", "Без звук"],
   "Неправилно броене": ["🧮", "Броене"],
   "Неправилно попълване на протокола": ["📝", "Протокол"],
   "Спорове и безредици в секцията": ["👊", "Спорове"],
+  "Външни лица / отворена врата / влизат и излизат хора": ["🚪", "Външни лица"],
+  "Използване на телефон (снимане, диктуване, указания)": ["📱", "Телефон"],
   "Подаден ми е грешен номер за член на СИК": ["☎️", "Грешен тел. СИК"],
   "Подаден ми е грешен номер за упълномощен представител": ["☎️", "Грешен тел. УП"],
   "Друго": ["❓", "Друго"],
@@ -538,12 +543,23 @@ function sofiaTime(dayUtc, hour) {
   return dayUtc + (hour - 2) * 3600e3;
 }
 
+// The election day in the form's name, "25.10.2026" or "1 ноември 2026": [day, month, year], or [].
+const MONTHS = ["януари", "февруари", "март", "април", "май", "юни", "юли", "август", "септември", "октомври", "ноември", "декември"];
+function formDay() {
+  const f = data.form || "";
+  const n = f.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (n) return n.slice(1).map(Number);
+  const w = f.match(/(\d{1,2})\s+(\p{L}+)\s+(\d{4})/u);
+  const m = w ? MONTHS.indexOf(w[2].toLowerCase()) : -1;
+  return m < 0 ? [] : [+w[1], m + 1, +w[3]];
+}
+
 function renderTimeline() {
   const el = $("timeline");
   const ts = data.rows.flatMap((r) => r.reports.map((x) => Date.parse(x[0])));
   const step = 15 * 60e3;
   // From 19:00 on election day to 30 minutes after the latest report (at least two hours).
-  const [dd, mm, yy] = (data.form.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/) ?? []).slice(1).map(Number);
+  const [dd, mm, yy] = formDay();
   const day = dd ? Date.UTC(yy, mm - 1, dd) : Math.floor(Date.parse(data.updated) / 86400e3) * 86400e3;
   const start = sofiaTime(day, 19);
   const latest = ts.length ? Math.max(...ts) : 0;
@@ -654,7 +670,8 @@ function renderRows() {
 }
 
 function renderAll() {
-  $("formName").textContent = "Избори " + ((data.form || "").match(/\d{1,2}\.\d{1,2}\.\d{4}/)?.[0] ?? "");
+  const [fd, fm, fy] = formDay();
+  $("formName").textContent = "Избори " + (fd ? `${String(fd).padStart(2, "0")}.${String(fm).padStart(2, "0")}.${fy}` : "");
   $("kTotal").textContent = nf.format(data.total);
   $("kTotalL").textContent = data.total === 1 ? "сигнал" : "сигнала";
   $("kSections").textContent = nf.format(data.sections);
@@ -791,14 +808,14 @@ async function load() {
 // is old data a failure; before and after the count it is just the latest.
 function status() {
   const reach = Date.now() - lastOk < 3 * REFRESH_MS;
-  const live = !IS_TEST && data?.live === true;
+  const live = !FROZEN && data?.live === true;
   const age = dataAt ? Date.now() - dataAt : 0;
   const stale = live && age > STALE_MS;
   $("dot").classList.toggle("stale", !live || !reach || stale);
   const at = dataAt ? hm.format(new Date(dataAt)) : "";
   $("status").textContent =
     !lastOk ? "Няма връзка с данните. Ще опитаме отново след минута." :
-    IS_TEST ? "Тестови данни от предишни избори · не се обновяват" :
+    FROZEN ? FROZEN :
     !live ? (dataAt ? `Данни към ${dayHm.format(new Date(dataAt))} ч.` : "Данни") + (reach ? "" : " · няма връзка") :
     stale ? `Данните не са обновявани от ${Math.floor(age / 60e3)} мин. (последни към ${at} ч.)` + (reach ? "" : " · няма връзка") :
     `Данни към ${at} ч. · обновяват се всяка минута` + (reach ? "" : " · няма връзка");

@@ -5,6 +5,9 @@ For what it is and who runs it, see the [README](../README.md).
 
 - **Live:** https://signali.promeni.bg/, from the Tally form in the secret
   `TALLY_FORM_ID`.
+- **Archive:** https://signali.promeni.bg/dashboard-25-october-2026/, the final
+  data of the 25 October 2026 form (`staging/25-october-2026.json`, summaries
+  included), frozen and indexed.
 - **Test:** https://signali.promeni.bg/dashboard-19-april-2026/, a frozen
   snapshot of the 19 April 2026 form (`staging/19-april-2026.json`).
 

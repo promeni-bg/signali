@@ -1,5 +1,6 @@
 // Build the GitHub Pages site into <out>:
 //   /                           live: the Tally form TALLY_FORM_ID, read now with TALLY_API_KEY
+//   dashboard-25-october-2026/  archive: the final data of 25 October 2026, staging/25-october-2026.json
 //   dashboard-19-april-2026/    test: the frozen snapshot staging/19-april-2026.json, not indexed
 //   dashboard/                  redirect to /, the first address we announced
 // EVIDEO_ELECTION (optional): evideo.bg's folder for this election, e.g. "pe202610".
@@ -18,15 +19,17 @@ const page = read("public/index.html");
 const sections = JSON.parse(read("src/sections.json"));
 const SITE = "https://signali.promeni.bg/";
 if (!page.includes("%%ELECTION%%")) throw new Error("public/index.html: the %%ELECTION%% placeholder is missing");
-if (!page.includes("const IS_TEST = false;")) throw new Error("public/index.html: the IS_TEST flag is missing");
+if (!page.includes('const FROZEN = "";')) throw new Error("public/index.html: the FROZEN status is missing");
 
-// The page, with this copy's election label (titles) and evideo.bg folder; the
-// test copy also gets its own address and stays out of search engines.
-function writePage(dir, snapshot, { label, evideo, test }) {
+// The page, with this copy's election label (titles) and evideo.bg folder; a
+// frozen copy (`frozen`: its status line) also gets its own address, and the
+// test copy stays out of search engines.
+function writePage(dir, snapshot, { label, evideo, frozen, noindex }) {
   let html = page.replaceAll("%%ELECTION%%", label)
     .replace('const EVIDEO_ELECTION = "";', `const EVIDEO_ELECTION = ${JSON.stringify(evideo ?? "")};`);
-  if (test) html = html.replaceAll(`"${SITE}"`, `"${SITE}${dir}/"`).replace("<head>", '<head>\n<meta name="robots" content="noindex">')
-    .replace("const IS_TEST = false;", "const IS_TEST = true;");
+  if (frozen) html = html.replaceAll(`"${SITE}"`, `"${SITE}${dir}/"`)
+    .replace('const FROZEN = "";', `const FROZEN = ${JSON.stringify(frozen)};`);
+  if (noindex) html = html.replace("<head>", '<head>\n<meta name="robots" content="noindex">');
   const base = dir ? `${out}/${dir}` : out;
   mkdirSync(`${base}/api`, { recursive: true });
   writeFileSync(`${base}/index.html`, html);
@@ -59,11 +62,15 @@ live.ai = sum.on;
 live.live = process.env.LIVE === "true";
 // counts only: a type answer the form's options don't know is a volunteer's own "other" text
 console.log(`видове: ${stats.typesMatched} разпознати, ${stats.typesOther} като „Друго“`);
-writePage("", live, { label: "Избори 25 октомври 2026", evideo: process.env.EVIDEO_ELECTION });
+writePage("", live, { label: "Избори 1 ноември 2026", evideo: process.env.EVIDEO_ELECTION });
 
-// test: last election, frozen
+// archive: the first round's final data
+writePage("dashboard-25-october-2026", JSON.parse(read("staging/25-october-2026.json")),
+  { label: "Избори 25 октомври 2026", evideo: "pvr2026", frozen: "Окончателни данни · не се обновяват" });
+
+// test: an earlier election, frozen
 writePage("dashboard-19-april-2026", { ...JSON.parse(read("staging/19-april-2026.json")), ai: true },
-  { label: "ТЕСТ с данни от 19 април 2026", evideo: "pe202604", test: true });
+  { label: "ТЕСТ с данни от 19 април 2026", evideo: "pe202604", frozen: "Тестови данни от предишни избори · не се обновяват", noindex: true });
 
 mkdirSync(`${out}/dashboard`, { recursive: true });
 writeFileSync(`${out}/dashboard/index.html`, `<!doctype html><meta charset="utf-8"><title>Сигнали от видеонаблюдение</title>
