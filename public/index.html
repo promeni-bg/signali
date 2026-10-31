@@ -793,7 +793,11 @@ async function load() {
     if (!r.ok) throw new Error(r.status);
     const text = await r.text();
     lastOk = Date.now();
-    dataAt = Date.parse(text.match(/"updated":"([^"]*)"/)?.[1] ?? "") || dataAt;
+    // GitHub Pages sometimes answers with a copy from a few deploys back: never go
+    // back to data older than what is shown (the next minute brings the latest)
+    const at = Date.parse(text.match(/"updated":"([^"]*)"/)?.[1] ?? "");
+    if (at && dataAt && at < dataAt) return status();
+    dataAt = at || dataAt;
     // unchanged data: don't re-render (it would close an open dropdown and drop focus)
     const key = text.replace(/"updated":"[^"]*",/, "");
     if (key !== lastKey) { lastKey = key; data = JSON.parse(text); renderAll(); }
