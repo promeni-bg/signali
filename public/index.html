@@ -347,6 +347,8 @@ const EVIDEO_ELECTION = "";
 // the status line of a frozen copy (the test page, an archived election): its data is old on purpose
 const FROZEN = "";
 const DATA_URL = "api/data.json";
+// the live page's data on the repository's data branch, updated every minute without a Pages deploy
+const LIVE_DATA_URL = "";
 const REFRESH_MS = 60_000;
 const PAGE = 20;
 
@@ -787,11 +789,19 @@ let lastOk = 0, lastKey = "", dataAt = 0;
 // the live data is rebuilt about once a minute, but a run that works off a backlog of
 // summaries takes ~3 minutes: data up to ~7 minutes old is normal then
 const STALE_MS = 10 * 60e3;
+// The live copy first (GitHub Pages can serve data an hour old), this site's own copy if that fails.
+async function fetchData(v) {
+  for (const url of LIVE_DATA_URL ? [LIVE_DATA_URL, DATA_URL] : [DATA_URL]) {
+    try {
+      const r = await fetch(`${url}?v=${v}`, { cache: "no-cache" });
+      if (r.ok) return await r.text();
+    } catch {}
+  }
+  throw new Error("no data");
+}
 async function load() {
   try {
-    const r = await fetch(`${DATA_URL}?v=${Math.floor(Date.now() / 60e3)}`, { cache: "no-cache" });
-    if (!r.ok) throw new Error(r.status);
-    const text = await r.text();
+    const text = await fetchData(Math.floor(Date.now() / 60e3));
     lastOk = Date.now();
     // GitHub Pages sometimes answers with a copy from a few deploys back: never go
     // back to data older than what is shown (the next minute brings the latest)

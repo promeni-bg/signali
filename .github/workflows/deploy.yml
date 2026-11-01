@@ -7,6 +7,11 @@
 # to "false" is the only way to stop it: a run that fails or is cancelled still
 # starts the next one. A push to main always deploys once.
 #
+# The live page reads its data from the branch `data` (raw.githubusercontent.com),
+# which every run force-pushes: GitHub Pages lagged up to an hour behind under
+# per-minute deploys. So the loop's runs (data_only) and the schedule only push
+# the data; a push to main or a run by hand also deploys the site.
+#
 # AI summaries of the reports' details run when the secret ANTHROPIC_API_KEY is
 # set; the variable SUMMARIES=false switches them off (docs/TECHNICAL.md).
 name: Deploy
@@ -15,11 +20,16 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      data_only:
+        description: "Only update the live data (the loop's runs)"
+        type: boolean
+        default: false
   schedule:
     - cron: "*/5 * * * *"
 
 permissions:
-  contents: read
+  contents: write   # the data branch
   pages: write
   id-token: write
   actions: write
@@ -66,22 +76,34 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUMMARIES: ${{ vars.SUMMARIES }}
           LIVE: ${{ vars.LIVE }}   # the page warns about old data only while LIVE
+          LIVE_DATA_URL: https://raw.githubusercontent.com/${{ github.repository }}/data/data.json
+      # the live data: one commit on the branch data, replaced each run
+      - name: Publish the live data
+        run: |
+          d="$RUNNER_TEMP/data" && mkdir -p "$d" && cp _site/api/data.json "$d/" && cd "$d"
+          git init -q -b data && git add data.json
+          git -c user.name=github-actions -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -q -m "Live data"
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Save the summaries
         if: always() && steps.build.outputs.summaries_changed == 'true'
         uses: actions/cache/save@v4
         with:
           path: .cache/summaries.json
           key: summaries-${{ github.run_id }}-${{ github.run_attempt }}
-      - uses: actions/upload-pages-artifact@v3
+      - if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.data_only)
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site
       - id: deployment
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.data_only)
         uses: actions/deploy-pages@v4
       - name: Start the next run
         if: always() && vars.LIVE == 'true' && github.event_name != 'push'
         # a run takes ~20 s: wait, so the site is rebuilt about once a minute
         run: |
           sleep 40
-          gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+          gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main -f data_only=true
         env:
           GH_TOKEN: ${{ github.token }}

@@ -4,6 +4,8 @@
 //   dashboard-19-april-2026/    test: the frozen snapshot staging/19-april-2026.json, not indexed
 //   dashboard/                  redirect to /, the first address we announced
 // EVIDEO_ELECTION (optional): evideo.bg's folder for this election, e.g. "pe202610".
+// LIVE_DATA_URL (optional): where the live page reads its data first (the data branch);
+//   its own api/data.json is the fallback.
 // ANTHROPIC_API_KEY (optional): AI summaries of the reports' details on the live page;
 //   SUMMARIES=false turns them off (and hides the ones already made). The summaries
 //   carry over between builds in SUMMARIES_STORE (default .cache/summaries.json).
@@ -24,9 +26,10 @@ if (!page.includes('const FROZEN = "";')) throw new Error("public/index.html: th
 // The page, with this copy's election label (titles) and evideo.bg folder; a
 // frozen copy (`frozen`: its status line) also gets its own address, and the
 // test copy stays out of search engines.
-function writePage(dir, snapshot, { label, evideo, frozen, noindex }) {
+function writePage(dir, snapshot, { label, evideo, frozen, noindex, liveData }) {
   let html = page.replaceAll("%%ELECTION%%", label)
-    .replace('const EVIDEO_ELECTION = "";', `const EVIDEO_ELECTION = ${JSON.stringify(evideo ?? "")};`);
+    .replace('const EVIDEO_ELECTION = "";', `const EVIDEO_ELECTION = ${JSON.stringify(evideo ?? "")};`)
+    .replace('const LIVE_DATA_URL = "";', `const LIVE_DATA_URL = ${JSON.stringify(liveData ?? "")};`);
   if (frozen) html = html.replaceAll(`"${SITE}"`, `"${SITE}${dir}/"`)
     .replace('const FROZEN = "";', `const FROZEN = ${JSON.stringify(frozen)};`);
   if (noindex) html = html.replace("<head>", '<head>\n<meta name="robots" content="noindex">');
@@ -62,7 +65,7 @@ live.ai = sum.on;
 live.live = process.env.LIVE === "true";
 // counts only: a type answer the form's options don't know is a volunteer's own "other" text
 console.log(`видове: ${stats.typesMatched} разпознати, ${stats.typesOther} като „Друго“`);
-writePage("", live, { label: "Избори 1 ноември 2026", evideo: process.env.EVIDEO_ELECTION });
+writePage("", live, { label: "Избори 1 ноември 2026", evideo: process.env.EVIDEO_ELECTION, liveData: process.env.LIVE_DATA_URL });
 
 // archive: the first round's final data
 writePage("dashboard-25-october-2026", JSON.parse(read("staging/25-october-2026.json")),
