@@ -32,7 +32,7 @@
   https://signali.promeni.bg/dashboard-1-november-2026/
 - Сигналите от изборите на 25 октомври 2026 (окончателни данни):
   https://signali.promeni.bg/dashboard-25-october-2026/
-- Тестова версия с данните от изборите на 19 април 2026:
+- Сигналите от изборите на 19 април 2026 (окончателни данни):
   https://signali.promeni.bg/dashboard-19-april-2026/
 - Техническо описание (на английски): [docs/TECHNICAL.md](docs/TECHNICAL.md)
 
@@ -72,6 +72,6 @@ Polling stations are ranked by the number of different volunteers, not just by t
   https://signali.promeni.bg/dashboard-1-november-2026/
 - The reports from the 25 October 2026 election (final data):
   https://signali.promeni.bg/dashboard-25-october-2026/
-- Test version with the data from the 19 April 2026 election:
+- The reports from the 19 April 2026 election (final data):
   https://signali.promeni.bg/dashboard-19-april-2026/
 - Technical documentation: [docs/TECHNICAL.md](docs/TECHNICAL.md)
