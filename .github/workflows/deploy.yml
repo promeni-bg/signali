@@ -8,9 +8,9 @@
 # starts the next one. A push to main always deploys once.
 #
 # The live page reads its data from the branch `data` (raw.githubusercontent.com),
-# which every run force-pushes: GitHub Pages lagged up to an hour behind under
-# per-minute deploys. So the loop's runs (data_only) and the schedule only push
-# the data; a push to main or a run by hand also deploys the site.
+# which every LIVE run force-pushes: GitHub Pages lagged up to an hour behind under
+# per-minute deploys. The frozen site does not use that branch; each archive is
+# baked from staging/*.json. The data branch is only rewritten while LIVE=true.
 #
 # AI summaries of the reports' details run when the secret ANTHROPIC_API_KEY is
 # set; the variable SUMMARIES=false switches them off (docs/TECHNICAL.md).
@@ -77,8 +77,10 @@ jobs:
           SUMMARIES: ${{ vars.SUMMARIES }}
           LIVE: ${{ vars.LIVE }}   # the page warns about old data only while LIVE
           LIVE_DATA_URL: https://raw.githubusercontent.com/${{ github.repository }}/data/data.json
-      # the live data: one commit on the branch data, replaced each run
+      # the live data: one commit on the branch data, replaced each run.
+      # Frozen archives don't write _site/api/data.json, so this only runs while LIVE.
       - name: Publish the live data
+        if: vars.LIVE == 'true'
         run: |
           d="$RUNNER_TEMP/data" && mkdir -p "$d" && cp _site/api/data.json "$d/" && cd "$d"
           git init -q -b data && git add data.json
